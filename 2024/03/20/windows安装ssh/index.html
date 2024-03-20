@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+  <meta charset="utf-8">
+  
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="Cache-Control" content="no-transform" />
+  <meta http-equiv="Cache-Control" content="no-siteapp" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="format-detection" content="telephone=no,email=no,adress=no">
+  <!-- Color theme for statusbar -->
+  <meta name="theme-color" content="#000000" />
+  <!-- 强制页面在当前窗口以独立页面显示,防止别人在框架里调用页面 -->
+  <meta http-equiv="window-target" content="_top" />
+  
+  
+  <title>windows10 安装和使用 ssh | yanwq</title>
+  <meta name="description" content="windows10 安装和使用 ssh  安装 1.下载文件 下载地址：https:&#x2F;&#x2F;github.com&#x2F;PowerShell&#x2F;Win32-OpenSSH&#x2F;releases  本人电脑64位  2.安装 将这个下载好的压缩包，解压到C:\Program Files目录下  3.配置到系统环境变量中  4.进入到 C盘 -&gt; Users -&gt;对应的用户中 执行cmd运行ssh测试">
+<meta property="og:type" content="article">
+<meta property="og:title" content="windows10 安装和使用 ssh">
+<meta property="og:url" content="https://www.yanwq.com/2024/03/20/windows%E5%AE%89%E8%A3%85ssh/index.html">
+<meta property="og:site_name" content="yanwq">
+<meta property="og:description" content="windows10 安装和使用 ssh  安装 1.下载文件 下载地址：https:&#x2F;&#x2F;github.com&#x2F;PowerShell&#x2F;Win32-OpenSSH&#x2F;releases  本人电脑64位  2.安装 将这个下载好的压缩包，解压到C:\Program Files目录下  3.配置到系统环境变量中  4.进入到 C盘 -&gt; Users -&gt;对应的用户中 执行cmd运行ssh测试">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://www.yanwq.com/imgs/image-20240320161041186.png">
+<meta property="og:image" content="https://www.yanwq.com/imgs/image-20240320161153808.png">
+<meta property="og:image" content="https://www.yanwq.com/imgs/image-20240320161257662.png">
+<meta property="og:image" content="https://www.yanwq.com/imgs/image-20240320161630214.png">
+<meta property="og:image" content="https://www.yanwq.com/imgs/image-20240320162116918.png">
+<meta property="og:image" content="https://www.yanwq.com/imgs/image-20240320162225264.png">
+<meta property="og:image" content="https://www.yanwq.com/imgs/image-20240320162410847.png">
+<meta property="og:image" content="https://www.yanwq.com/imgs/image-20240320162918218.png">
+<meta property="og:image" content="https://www.yanwq.com/imgs/image-20240320163038687.png">
+<meta property="article:published_time" content="2024-03-20T09:04:36.714Z">
+<meta property="article:modified_time" content="2024-03-20T09:04:36.714Z">
+<meta property="article:author" content="yanwq">
+<meta property="article:tag" content="node">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://www.yanwq.com/imgs/image-20240320161041186.png">
+  <!-- Canonical links -->
+  <link rel="canonical" href="https://www.yanwq.com/2024/03/20/windows%E5%AE%89%E8%A3%85ssh/index.html">
+  
+    <link rel="alternate" href="/atom.xml" title="yanwq" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+  
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitment@0.0.3/style/default.min.css">
+  
+  
+  
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?b839d137c29d9b42d962e7accfbb17ce";
+  var s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body class="main-center theme-black" itemscope itemtype="http://schema.org/WebPage">
+  <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+  <div class="slimContent">
+    <div class="navbar-header">
+      
+      
+      <div class="profile-block text-center">
+        <a id="avatar" href="https://github.com/ywq0811" target="_blank">
+          <img class="img-circle img-rotate" src="/images/avatar.jpg" width="200" height="200">
+        </a>
+        <h2 id="name" class="hidden-xs hidden-sm">yanwq</h2>
+        <h3 id="title" class="hidden-xs hidden-sm hidden-md">Go Developer</h3>
+        <small id="location" class="text-muted hidden-xs hidden-sm"><i class="icon icon-map-marker"></i> Xiamen, China</small>
+      </div>
+      
+      <div class="search" id="search-form-wrap">
+
+    <form class="search-form sidebar-form">
+        <div class="input-group">
+            <input type="text" class="search-form-input form-control" placeholder="搜索" />
+            <span class="input-group-btn">
+                <button type="submit" class="search-form-submit btn btn-flat" onclick="return false;"><i class="icon icon-search"></i></button>
+            </span>
+        </div>
+    </form>
+    <div class="ins-search">
+  <div class="ins-search-mask"></div>
+  <div class="ins-search-container">
+    <div class="ins-input-wrapper">
+      <input type="text" class="ins-search-input" placeholder="想要查找什么..." x-webkit-speech />
+      <button type="button" class="close ins-close ins-selectable" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+    </div>
+    <div class="ins-section-wrapper">
+      <div class="ins-section-container"></div>
+    </div>
+  </div>
+</div>
+
+
+</div>
+      <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#main-navbar" aria-controls="main-navbar" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <nav id="main-navbar" class="collapse navbar-collapse" itemscope itemtype="http://schema.org/SiteNavigationElement" role="navigation">
+      <ul class="nav navbar-nav main-nav ">
+        
+        
+        <li class="menu-item menu-item-home">
+          <a href="/.">
+            
+            <i class="icon icon-home-fill"></i>
+            
+            <span class="menu-title">首页</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives">
+            
+            <i class="icon icon-archives-fill"></i>
+            
+            <span class="menu-title">归档</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories">
+            
+            <i class="icon icon-folder"></i>
+            
+            <span class="menu-title">分类</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags">
+            
+            <i class="icon icon-tags"></i>
+            
+            <span class="menu-title">标签</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-repository">
+          <a href="/repository">
+            
+            <i class="icon icon-project"></i>
+            
+            <span class="menu-title">项目</span>
+          </a>
+        </li>
+        
+      </ul>
+      
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/ywq0811" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+    </ul>
+
+    </nav>
+  </div>
+</header>
+
+  
+    <aside class="sidebar" itemscope itemtype="http://schema.org/WPSideBar">
+  <div class="slimContent">
+    
+      <div class="widget">
+    <h3 class="widget-title">公告</h3>
+    <div class="widget-body">
+        <div id="board">
+            <div class="content">
+                <p>欢迎交流与分享经验!</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">分类</h3>
+    <div class="widget-body">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/DB/">DB</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Docker/">Docker</a><span class="category-list-count">10</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Go/">Go</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Proto/">Proto</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Ubuntu/">Ubuntu</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Windows/">Windows</a><span class="category-list-count">3</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget-body">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/consul/" rel="tag">consul</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cron/" rel="tag">cron</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/db/" rel="tag">db</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/" rel="tag">docker</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/es/" rel="tag">es</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/go/" rel="tag">go</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/go-zero/" rel="tag">go-zero</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/grafana/" rel="tag">grafana</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/https/" rel="tag">https</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/" rel="tag">mysql</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/node/" rel="tag">node</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/oracle/" rel="tag">oracle</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/proto/" rel="tag">proto</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rabbitMQ/" rel="tag">rabbitMQ</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ubuntu/" rel="tag">ubuntu</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/wsl2/" rel="tag">wsl2</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签云</h3>
+    <div class="widget-body tagcloud">
+      <a href="/tags/consul/" style="font-size: 14px;">consul</a> <a href="/tags/cron/" style="font-size: 13px;">cron</a> <a href="/tags/db/" style="font-size: 13px;">db</a> <a href="/tags/docker/" style="font-size: 13px;">docker</a> <a href="/tags/es/" style="font-size: 13px;">es</a> <a href="/tags/go/" style="font-size: 13px;">go</a> <a href="/tags/go-zero/" style="font-size: 13.5px;">go-zero</a> <a href="/tags/grafana/" style="font-size: 13.5px;">grafana</a> <a href="/tags/https/" style="font-size: 13px;">https</a> <a href="/tags/mysql/" style="font-size: 13.5px;">mysql</a> <a href="/tags/node/" style="font-size: 13.5px;">node</a> <a href="/tags/oracle/" style="font-size: 13px;">oracle</a> <a href="/tags/proto/" style="font-size: 13px;">proto</a> <a href="/tags/rabbitMQ/" style="font-size: 13px;">rabbitMQ</a> <a href="/tags/ubuntu/" style="font-size: 13px;">ubuntu</a> <a href="/tags/wsl2/" style="font-size: 13px;">wsl2</a>
+    </div>
+  </div>
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget-body">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/03/">三月 2024</a><span class="archive-list-count">21</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget-body">
+      <ul class="recent-post-list list-unstyled no-thumbnail">
+        
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/Docker/">Docker</a>
+              </p>
+              <p class="item-title">
+                <a href="/2024/03/20/RabbitMQ%E9%83%A8%E7%BD%B2/" class="title">RabbitMQ部署和使用文档</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2024-03-20T11:13:31.495Z" itemprop="datePublished">2024-03-20</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/Linux/">Linux</a>
+              </p>
+              <p class="item-title">
+                <a href="/2024/03/20/linux%E6%89%A7%E8%A1%8Cmysql%E5%91%BD%E4%BB%A4/" class="title">Linux执行mysql命令</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2024-03-20T11:13:25.510Z" itemprop="datePublished">2024-03-20</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/Go/">Go</a>
+              </p>
+              <p class="item-title">
+                <a href="/2024/03/20/go-zero%E4%BD%BF%E7%94%A8%E6%96%87%E6%A1%A3/" class="title">go-zero的基本使用</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2024-03-20T11:11:28.357Z" itemprop="datePublished">2024-03-20</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/Docker/">Docker</a>
+              </p>
+              <p class="item-title">
+                <a href="/2024/03/20/163%E9%82%AE%E7%AE%B1%E4%BD%BF%E7%94%A8smtp%E6%9C%8D%E5%8A%A1%E5%8F%91%E9%80%81/" class="title">163邮箱使用smtp服务发送消息</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2024-03-20T11:11:24.477Z" itemprop="datePublished">2024-03-20</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/Windows/">Windows</a>
+              </p>
+              <p class="item-title">
+                <a href="/2024/03/20/windows%E5%AE%89%E8%A3%85node/" class="title">windows 安装node</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2024-03-20T09:04:36.714Z" itemprop="datePublished">2024-03-20</time>
+              </p>
+            </div>
+          </li>
+          
+      </ul>
+    </div>
+  </div>
+  
+
+    
+  </div>
+</aside>
+
+  
+  
+  <aside class="sidebar sidebar-toc collapse   in  " id="collapseToc" itemscope itemtype="http://schema.org/WPSideBar">
+  <div class="slimContent">
+    <nav id="toc" class="article-toc">
+      <h3 class="toc-title">文章目录</h3>
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#windows10-%E5%AE%89%E8%A3%85%E5%92%8C%E4%BD%BF%E7%94%A8-ssh"><span class="toc-number">1.</span> <span class="toc-text"> windows10 安装和使用 ssh</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AE%89%E8%A3%85"><span class="toc-number">1.0.1.</span> <span class="toc-text"> 安装</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%94%9F%E6%88%90ssh-key"><span class="toc-number">1.0.2.</span> <span class="toc-text"> 生成SSH key</span></a></li></ol></li></ol></li></ol>
+    </nav>
+  </div>
+</aside>
+
+<main class="main" role="main">
+  <div class="content">
+  <article id="post-windows安装ssh" class="article article-type-post" itemscope itemtype="http://schema.org/BlogPosting">
+    
+    <div class="article-header">
+      
+        
+  
+    <h1 class="article-title" itemprop="name">
+      windows10 安装和使用 ssh
+    </h1>
+  
+
+      
+      <div class="article-meta">
+        <span class="article-date">
+    <i class="icon icon-calendar-check"></i>
+	<a href="/2024/03/20/windows%E5%AE%89%E8%A3%85ssh/" class="article-date">
+	  <time datetime="2024-03-20T09:04:36.714Z" itemprop="datePublished">2024-03-20</time>
+	</a>
+</span>
+        
+  <span class="article-category">
+    <i class="icon icon-folder"></i>
+    <a class="article-category-link" href="/categories/Windows/">Windows</a>
+  </span>
+
+        
+  <span class="article-tag">
+    <i class="icon icon-tags"></i>
+	<a class="article-tag-link-link" href="/tags/node/" rel="tag">node</a>
+  </span>
+
+
+        
+
+        <span class="post-comment"><i class="icon icon-comment"></i> <a href="/2024/03/20/windows%E5%AE%89%E8%A3%85ssh/#comments" class="article-comment-link">评论</a></span>
+        
+	
+		<span class="post-wordcount hidden-xs" itemprop="wordCount">字数统计: 186(字)</span>
+	
+	
+		<span class="post-readcount hidden-xs" itemprop="timeRequired">阅读时长: 1(分)</span>
+	
+
+      </div>
+    </div>
+    <div class="article-entry marked-body" itemprop="articleBody">
+      
+        <h2 id="windows10-安装和使用-ssh"><a class="markdownIt-Anchor" href="#windows10-安装和使用-ssh"></a> windows10 安装和使用 ssh</h2>
+<h4 id="安装"><a class="markdownIt-Anchor" href="#安装"></a> 安装</h4>
+<p>1.下载文件</p>
+<p>下载地址：<a target="_blank" rel="noopener" href="https://github.com/PowerShell/Win32-OpenSSH/releases">https://github.com/PowerShell/Win32-OpenSSH/releases</a>  本人电脑64位</p>
+<p><img src="/imgs/image-20240320161041186.png" alt="image-20240320161041186" /></p>
+<p>2.安装</p>
+<p>将这个下载好的压缩包，解压到C:\Program Files目录下</p>
+<p><img src="/imgs/image-20240320161153808.png" alt="image-20240320161153808" /></p>
+<p>3.配置到系统环境变量中</p>
+<p><img src="/imgs/image-20240320161257662.png" alt="image-20240320161257662" /></p>
+<p>4.进入到 C盘 -&gt; Users -&gt;对应的用户中 执行cmd运行ssh测试</p>
+<p><img src="/imgs/image-20240320161630214.png" alt="image-20240320161630214" /></p>
+<hr />
+<h4 id="生成ssh-key"><a class="markdownIt-Anchor" href="#生成ssh-key"></a> 生成SSH key</h4>
+<ol>
+<li>cmd中执行命令生成密钥</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ssh-keygen -t rsa -C &quot;your_email@example.com&quot;</span><br></pre></td></tr></table></figure>
+<p><img src="/imgs/image-20240320162116918.png" alt="image-20240320162116918" /></p>
+<p>出现这个图说明生成成功</p>
+<p>2.进入C盘 -&gt; Users -&gt; 对应用户中查看,会生成一个 <code>.ssh</code> 文件夹</p>
+<p><img src="/imgs/image-20240320162225264.png" alt="image-20240320162225264" /></p>
+<p>3.读取公钥并添加到github中</p>
+<p><img src="/imgs/image-20240320162410847.png" alt="image-20240320162410847" /></p>
+<p>4.登录到 <code>github.com</code> 中 添加ssh key</p>
+<p><img src="/imgs/image-20240320162918218.png" alt="image-20240320162918218" /></p>
+<p><img src="/imgs/image-20240320163038687.png" alt="image-20240320163038687" /></p>
+<p>5.对此从指定github上拉取项目就不需要验证了</p>
+
+      
+    </div>
+    <div class="article-footer">
+      <blockquote class="mt-2x">
+  <ul class="post-copyright list-unstyled">
+    
+    <li class="post-copyright-link hidden-xs">
+      <strong>本文链接：</strong>
+      <a href="https://www.yanwq.com/2024/03/20/windows%E5%AE%89%E8%A3%85ssh/" title="windows10 安装和使用 ssh" target="_blank" rel="external">https://www.yanwq.com/2024/03/20/windows安装ssh/</a>
+    </li>
+    
+    <li class="post-copyright-license">
+      <strong>版权声明： </strong> 本博客所有文章除特别声明外，均采用 <a href="http://creativecommons.org/licenses/by/4.0/deed.zh" target="_blank" rel="external">CC BY 4.0 CN协议</a> 许可协议。转载请注明出处！
+    </li>
+  </ul>
+</blockquote>
+
+
+<div class="panel panel-default panel-badger">
+  <div class="panel-body">
+    <figure class="media">
+      <div class="media-left">
+        <a href="https://github.com/ywq0811" target="_blank" class="img-burn thumb-sm visible-lg">
+          <img src="/images/avatar.jpg" class="img-rounded w-full" alt="">
+        </a>
+      </div>
+      <div class="media-body">
+        <h3 class="media-heading"><a href="https://github.com/ywq0811" target="_blank"><span class="text-dark">yanwq</span><small class="ml-1x">Go Developer</small></a></h3>
+        <div>个人简介。</div>
+      </div>
+    </figure>
+  </div>
+</div>
+
+
+    </div>
+  </article>
+  
+    
+  <section id="comments">
+  	
+
+    
+  </section>
+
+
+  
+</div>
+
+  <nav class="bar bar-footer clearfix" data-stick-bottom>
+  <div class="bar-inner">
+  
+  <ul class="pager pull-left">
+    
+    <li class="prev">
+      <a href="/2024/03/20/windows%E5%AE%89%E8%A3%85node/" title="windows 安装node"><i class="icon icon-angle-left" aria-hidden="true"></i><span>&nbsp;&nbsp;上一篇</span></a>
+    </li>
+    
+    
+    <li class="next">
+      <a href="/2024/03/20/order%E6%89%93%E5%8C%85/" title="go-zero 生成和打包api和rpc"><span>下一篇&nbsp;&nbsp;</span><i class="icon icon-angle-right" aria-hidden="true"></i></a>
+    </li>
+    
+    
+    <li class="toggle-toc">
+      <a class="toggle-btn " data-toggle="collapse" href="#collapseToc" aria-expanded="false" title="文章目录" role="button">    <span>[&nbsp;</span><span>文章目录</span>
+        <i class="text-collapsed icon icon-anchor"></i>
+        <i class="text-in icon icon-close"></i>
+        <span>]</span>
+      </a>
+    </li>
+    
+  </ul>
+  
+  
+  
+  <div class="bar-right">
+    
+  </div>
+  </div>
+</nav>
+  
+
+
+</main>
+
+  <footer class="footer" itemscope itemtype="http://schema.org/WPFooter">
+	
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/ywq0811" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+    </ul>
+
+    <div class="copyright">
+    	
+        <div class="publishby">
+        	Theme by <a href="https://github.com/cofess" target="_blank"> cofess </a>base on <a href="https://github.com/cofess/hexo-theme-pure" target="_blank">pure</a>.
+        </div>
+    </div>
+</footer>
+  <script src="//cdn.jsdelivr.net/npm/jquery@1.12.4/dist/jquery.min.js"></script>
+<script>
+window.jQuery || document.write('<script src="js/jquery.min.js"><\/script>')
+</script>
+
+<script src="/js/plugin.min.js"></script>
+
+
+<script src="/js/application.js"></script>
+
+
+    <script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(未命名)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+
+<script src="/js/insight.js"></script>
+
+
+
+
+
+
+   
+
+
+
+
+   
+    
+<script src="//cdn.jsdelivr.net/npm/gitment@0.0.3/dist/gitment.browser.min.js"></script>
+<script>
+var gitment = new Gitment({
+  // id默认为当前页面url，如果url后带参数或锚点，gitment要重新初始化
+  // https://github.com/imsun/gitment/issues/55
+  // 解决方案：id:window.location.pathname,或者将id设置为当前页面标题
+  id: 'windows10 安装和使用 ssh', 
+  owner: '', // 可以是你的GitHub用户名，也可以是github id
+  repo: '',
+  oauth: {
+    client_id: '',
+    client_secret: '',
+  }
+})
+gitment.render('comments')
+</script>
+
+
+
+
+
+
+
+
+
+</body>
+</html>

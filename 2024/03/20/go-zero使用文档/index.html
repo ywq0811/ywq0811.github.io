@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+  <meta charset="utf-8">
+  
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="Cache-Control" content="no-transform" />
+  <meta http-equiv="Cache-Control" content="no-siteapp" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="format-detection" content="telephone=no,email=no,adress=no">
+  <!-- Color theme for statusbar -->
+  <meta name="theme-color" content="#000000" />
+  <!-- 强制页面在当前窗口以独立页面显示,防止别人在框架里调用页面 -->
+  <meta http-equiv="window-target" content="_top" />
+  
+  
+  <title>go-zero的基本使用 | yanwq</title>
+  <meta name="description" content="go-zero的基本使用  安装就不赘述了，照着官方文档即可，装好Goctl和protoc   1. 创建API工程  goctl 工具创建工程分为两种，一种是api工程，一种是rpc工程，如下： api：goctl api go -api user.api -dir . rpc：goctl rpc proto -src user.proto -dir . 其中，rpc工程的创建依赖.proto">
+<meta property="og:type" content="article">
+<meta property="og:title" content="go-zero的基本使用">
+<meta property="og:url" content="https://www.yanwq.com/2024/03/20/go-zero%E4%BD%BF%E7%94%A8%E6%96%87%E6%A1%A3/index.html">
+<meta property="og:site_name" content="yanwq">
+<meta property="og:description" content="go-zero的基本使用  安装就不赘述了，照着官方文档即可，装好Goctl和protoc   1. 创建API工程  goctl 工具创建工程分为两种，一种是api工程，一种是rpc工程，如下： api：goctl api go -api user.api -dir . rpc：goctl rpc proto -src user.proto -dir . 其中，rpc工程的创建依赖.proto">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2024-03-20T11:11:28.357Z">
+<meta property="article:modified_time" content="2024-03-20T11:17:50.575Z">
+<meta property="article:author" content="yanwq">
+<meta property="article:tag" content="go-zero">
+<meta name="twitter:card" content="summary">
+  <!-- Canonical links -->
+  <link rel="canonical" href="https://www.yanwq.com/2024/03/20/go-zero%E4%BD%BF%E7%94%A8%E6%96%87%E6%A1%A3/index.html">
+  
+    <link rel="alternate" href="/atom.xml" title="yanwq" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+  
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitment@0.0.3/style/default.min.css">
+  
+  
+  
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?b839d137c29d9b42d962e7accfbb17ce";
+  var s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body class="main-center theme-black" itemscope itemtype="http://schema.org/WebPage">
+  <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+  <div class="slimContent">
+    <div class="navbar-header">
+      
+      
+      <div class="profile-block text-center">
+        <a id="avatar" href="https://github.com/ywq0811" target="_blank">
+          <img class="img-circle img-rotate" src="/images/avatar.jpg" width="200" height="200">
+        </a>
+        <h2 id="name" class="hidden-xs hidden-sm">yanwq</h2>
+        <h3 id="title" class="hidden-xs hidden-sm hidden-md">Go Developer</h3>
+        <small id="location" class="text-muted hidden-xs hidden-sm"><i class="icon icon-map-marker"></i> Xiamen, China</small>
+      </div>
+      
+      <div class="search" id="search-form-wrap">
+
+    <form class="search-form sidebar-form">
+        <div class="input-group">
+            <input type="text" class="search-form-input form-control" placeholder="搜索" />
+            <span class="input-group-btn">
+                <button type="submit" class="search-form-submit btn btn-flat" onclick="return false;"><i class="icon icon-search"></i></button>
+            </span>
+        </div>
+    </form>
+    <div class="ins-search">
+  <div class="ins-search-mask"></div>
+  <div class="ins-search-container">
+    <div class="ins-input-wrapper">
+      <input type="text" class="ins-search-input" placeholder="想要查找什么..." x-webkit-speech />
+      <button type="button" class="close ins-close ins-selectable" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+    </div>
+    <div class="ins-section-wrapper">
+      <div class="ins-section-container"></div>
+    </div>
+  </div>
+</div>
+
+
+</div>
+      <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#main-navbar" aria-controls="main-navbar" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <nav id="main-navbar" class="collapse navbar-collapse" itemscope itemtype="http://schema.org/SiteNavigationElement" role="navigation">
+      <ul class="nav navbar-nav main-nav ">
+        
+        
+        <li class="menu-item menu-item-home">
+          <a href="/.">
+            
+            <i class="icon icon-home-fill"></i>
+            
+            <span class="menu-title">首页</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives">
+            
+            <i class="icon icon-archives-fill"></i>
+            
+            <span class="menu-title">归档</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories">
+            
+            <i class="icon icon-folder"></i>
+            
+            <span class="menu-title">分类</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags">
+            
+            <i class="icon icon-tags"></i>
+            
+            <span class="menu-title">标签</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-repository">
+          <a href="/repository">
+            
+            <i class="icon icon-project"></i>
+            
+            <span class="menu-title">项目</span>
+          </a>
+        </li>
+        
+      </ul>
+      
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/ywq0811" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+    </ul>
+
+    </nav>
+  </div>
+</header>
+
+  
+    <aside class="sidebar" itemscope itemtype="http://schema.org/WPSideBar">
+  <div class="slimContent">
+    
+      <div class="widget">
+    <h3 class="widget-title">公告</h3>
+    <div class="widget-body">
+        <div id="board">
+            <div class="content">
+                <p>欢迎交流与分享经验!</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">分类</h3>
+    <div class="widget-body">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/DB/">DB</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Docker/">Docker</a><span class="category-list-count">10</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Go/">Go</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Proto/">Proto</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Ubuntu/">Ubuntu</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Windows/">Windows</a><span class="category-list-count">3</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget-body">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/consul/" rel="tag">consul</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cron/" rel="tag">cron</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/db/" rel="tag">db</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/" rel="tag">docker</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/es/" rel="tag">es</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/go/" rel="tag">go</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/go-zero/" rel="tag">go-zero</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/grafana/" rel="tag">grafana</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/https/" rel="tag">https</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/" rel="tag">mysql</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/node/" rel="tag">node</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/oracle/" rel="tag">oracle</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/proto/" rel="tag">proto</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rabbitMQ/" rel="tag">rabbitMQ</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ubuntu/" rel="tag">ubuntu</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/wsl2/" rel="tag">wsl2</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签云</h3>
+    <div class="widget-body tagcloud">
+      <a href="/tags/consul/" style="font-size: 14px;">consul</a> <a href="/tags/cron/" style="font-size: 13px;">cron</a> <a href="/tags/db/" style="font-size: 13px;">db</a> <a href="/tags/docker/" style="font-size: 13px;">docker</a> <a href="/tags/es/" style="font-size: 13px;">es</a> <a href="/tags/go/" style="font-size: 13px;">go</a> <a href="/tags/go-zero/" style="font-size: 13.5px;">go-zero</a> <a href="/tags/grafana/" style="font-size: 13.5px;">grafana</a> <a href="/tags/https/" style="font-size: 13px;">https</a> <a href="/tags/mysql/" style="font-size: 13.5px;">mysql</a> <a href="/tags/node/" style="font-size: 13.5px;">node</a> <a href="/tags/oracle/" style="font-size: 13px;">oracle</a> <a href="/tags/proto/" style="font-size: 13px;">proto</a> <a href="/tags/rabbitMQ/" style="font-size: 13px;">rabbitMQ</a> <a href="/tags/ubuntu/" style="font-size: 13px;">ubuntu</a> <a href="/tags/wsl2/" style="font-size: 13px;">wsl2</a>
+    </div>
+  </div>
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget-body">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/03/">三月 2024</a><span class="archive-list-count">21</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget-body">
+      <ul class="recent-post-list list-unstyled no-thumbnail">
+        
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/Docker/">Docker</a>
+              </p>
+              <p class="item-title">
+                <a href="/2024/03/20/RabbitMQ%E9%83%A8%E7%BD%B2/" class="title">RabbitMQ部署和使用文档</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2024-03-20T11:13:31.495Z" itemprop="datePublished">2024-03-20</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/Linux/">Linux</a>
+              </p>
+              <p class="item-title">
+                <a href="/2024/03/20/linux%E6%89%A7%E8%A1%8Cmysql%E5%91%BD%E4%BB%A4/" class="title">Linux执行mysql命令</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2024-03-20T11:13:25.510Z" itemprop="datePublished">2024-03-20</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/Go/">Go</a>
+              </p>
+              <p class="item-title">
+                <a href="/2024/03/20/go-zero%E4%BD%BF%E7%94%A8%E6%96%87%E6%A1%A3/" class="title">go-zero的基本使用</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2024-03-20T11:11:28.357Z" itemprop="datePublished">2024-03-20</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/Docker/">Docker</a>
+              </p>
+              <p class="item-title">
+                <a href="/2024/03/20/163%E9%82%AE%E7%AE%B1%E4%BD%BF%E7%94%A8smtp%E6%9C%8D%E5%8A%A1%E5%8F%91%E9%80%81/" class="title">163邮箱使用smtp服务发送消息</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2024-03-20T11:11:24.477Z" itemprop="datePublished">2024-03-20</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/Windows/">Windows</a>
+              </p>
+              <p class="item-title">
+                <a href="/2024/03/20/windows%E5%AE%89%E8%A3%85node/" class="title">windows 安装node</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2024-03-20T09:04:36.714Z" itemprop="datePublished">2024-03-20</time>
+              </p>
+            </div>
+          </li>
+          
+      </ul>
+    </div>
+  </div>
+  
+
+    
+  </div>
+</aside>
+
+  
+  
+  <aside class="sidebar sidebar-toc collapse   in  " id="collapseToc" itemscope itemtype="http://schema.org/WPSideBar">
+  <div class="slimContent">
+    <nav id="toc" class="article-toc">
+      <h3 class="toc-title">文章目录</h3>
+      <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#go-zero%E7%9A%84%E5%9F%BA%E6%9C%AC%E4%BD%BF%E7%94%A8"><span class="toc-number">1.</span> <span class="toc-text"> go-zero的基本使用</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E5%88%9B%E5%BB%BAapi%E5%B7%A5%E7%A8%8B"><span class="toc-number">1.0.1.</span> <span class="toc-text"> 1. 创建API工程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E7%BC%96%E5%86%99%E4%B8%9A%E5%8A%A1%E9%80%BB%E8%BE%91"><span class="toc-number">1.0.2.</span> <span class="toc-text"> 2. 编写业务逻辑</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-model%E5%B1%82%E4%BD%BF%E7%94%A8"><span class="toc-number">1.0.3.</span> <span class="toc-text"> 3. model层使用</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#31-model%E7%94%9F%E6%88%90"><span class="toc-number">1.0.3.1.</span> <span class="toc-text"> 3.1 model生成</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#32-%E9%85%8D%E7%BD%AE"><span class="toc-number">1.0.3.2.</span> <span class="toc-text"> 3.2 配置</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#33-%E4%B8%8A%E4%B8%8B%E6%96%87%E6%B3%A8%E5%85%A5model"><span class="toc-number">1.0.3.3.</span> <span class="toc-text"> 3.3 上下文注入model</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#34-%E4%BF%AE%E6%94%B9%E6%8E%A5%E5%8F%A3%E6%96%87%E4%BB%B6"><span class="toc-number">1.0.3.4.</span> <span class="toc-text"> 3.4 修改接口文件</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#35-%E9%80%BB%E8%BE%91%E5%B1%82%E4%BD%BF%E7%94%A8model"><span class="toc-number">1.0.3.5.</span> <span class="toc-text"> 3.5 逻辑层使用model</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-jwt%E7%9A%84%E4%BD%BF%E7%94%A8"><span class="toc-number">1.0.4.</span> <span class="toc-text"> 4. jwt的使用</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-%E4%B8%AD%E9%97%B4%E4%BB%B6"><span class="toc-number">1.0.5.</span> <span class="toc-text"> 5. 中间件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-rpc%E6%9C%8D%E5%8A%A1"><span class="toc-number">1.0.6.</span> <span class="toc-text"> 6. rpc服务</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#61-%E5%88%9B%E5%BB%BA%E6%9C%8D%E5%8A%A1"><span class="toc-number">1.0.6.1.</span> <span class="toc-text"> 6.1 创建服务</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#62-%E8%B0%83%E7%94%A8%E6%9C%8D%E5%8A%A1"><span class="toc-number">1.0.6.2.</span> <span class="toc-text"> 6.2 调用服务</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-%E8%87%AA%E9%80%82%E5%BA%94%E9%99%8D%E8%BD%BD%E4%BF%9D%E6%8A%A4"><span class="toc-number">1.0.7.</span> <span class="toc-text"> 7. &#x2F;&#x2F; 自适应降载保护</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-%E7%86%94%E6%96%AD"><span class="toc-number">1.0.8.</span> <span class="toc-text"> 8. 熔断</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9-%E5%B9%B6%E5%8F%91%E9%99%90%E5%88%B6"><span class="toc-number">1.0.9.</span> <span class="toc-text"> 9. 并发限制</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#10-%E5%BC%95%E6%93%8E%E5%B9%B6%E5%8F%91%E6%8E%A7%E5%88%B6%E6%96%B9%E6%A1%88-periodlimit"><span class="toc-number">1.0.10.</span> <span class="toc-text"> 10. 引擎并发控制方案 - PeriodLimit</span></a></li></ol></li></ol></li></ol>
+    </nav>
+  </div>
+</aside>
+
+<main class="main" role="main">
+  <div class="content">
+  <article id="post-go-zero使用文档" class="article article-type-post" itemscope itemtype="http://schema.org/BlogPosting">
+    
+    <div class="article-header">
+      
+        
+  
+    <h1 class="article-title" itemprop="name">
+      go-zero的基本使用
+    </h1>
+  
+
+      
+      <div class="article-meta">
+        <span class="article-date">
+    <i class="icon icon-calendar-check"></i>
+	<a href="/2024/03/20/go-zero%E4%BD%BF%E7%94%A8%E6%96%87%E6%A1%A3/" class="article-date">
+	  <time datetime="2024-03-20T11:11:28.357Z" itemprop="datePublished">2024-03-20</time>
+	</a>
+</span>
+        
+  <span class="article-category">
+    <i class="icon icon-folder"></i>
+    <a class="article-category-link" href="/categories/Go/">Go</a>
+  </span>
+
+        
+  <span class="article-tag">
+    <i class="icon icon-tags"></i>
+	<a class="article-tag-link-link" href="/tags/go-zero/" rel="tag">go-zero</a>
+  </span>
+
+
+        
+
+        <span class="post-comment"><i class="icon icon-comment"></i> <a href="/2024/03/20/go-zero%E4%BD%BF%E7%94%A8%E6%96%87%E6%A1%A3/#comments" class="article-comment-link">评论</a></span>
+        
+	
+		<span class="post-wordcount hidden-xs" itemprop="wordCount">字数统计: 2.1k(字)</span>
+	
+	
+		<span class="post-readcount hidden-xs" itemprop="timeRequired">阅读时长: 9(分)</span>
+	
+
+      </div>
+    </div>
+    <div class="article-entry marked-body" itemprop="articleBody">
+      
+        <h1 id="go-zero的基本使用"><a class="markdownIt-Anchor" href="#go-zero的基本使用"></a> go-zero的基本使用</h1>
+<blockquote>
+<p>安装就不赘述了，照着<a target="_blank" rel="noopener" href="https://go-zero.dev/cn/prepare.html">官方文档</a>即可，装好Goctl和protoc</p>
+</blockquote>
+<h3 id="1-创建api工程"><a class="markdownIt-Anchor" href="#1-创建api工程"></a> 1. 创建API工程</h3>
+<blockquote>
+<p>goctl 工具创建工程分为两种，一种是api工程，一种是rpc工程，如下：</p>
+<p>api：goctl api go -api user.api -dir .</p>
+<p>rpc：goctl rpc proto -src user.proto -dir .</p>
+<p>其中，rpc工程的创建依赖.proto文件，而api工程的创建依赖.api文件</p>
+</blockquote>
+<ul>
+<li>创建目录：</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mkdir go-zero-test</span><br></pre></td></tr></table></figure>
+<ul>
+<li>创建user接口工程的目录</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mkdir -p user/api &amp;&amp; cd user/api</span><br></pre></td></tr></table></figure>
+<ul>
+<li>
+<p>用goland打开这个文件，创建<code>go.mod</code></p>
+</li>
+<li>
+<p>添加api文件</p>
+</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">vim user.api</span><br><span class="line"></span><br><span class="line">type (</span><br><span class="line">	HelloReq &#123;</span><br><span class="line">		Name string `form:&quot;name&quot;`</span><br><span class="line">	&#125;</span><br><span class="line">	HelloRes &#123;</span><br><span class="line">		Code int    `json:&quot;code&quot;`</span><br><span class="line">		Msg  string `json:&quot;msg&quot;`</span><br><span class="line">	&#125;</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">service user-api &#123;</span><br><span class="line">	@handler hello</span><br><span class="line">	get /user/hello (HelloReq) returns (HelloRes)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>创建api工程</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">goctl api go -api user.api -dir .</span><br></pre></td></tr></table></figure>
+<p>可以看到生成了很多文件，<a target="_blank" rel="noopener" href="https://go-zero.dev/cn/api-dir.html">文件结构看这里</a></p>
+<h3 id="2-编写业务逻辑"><a class="markdownIt-Anchor" href="#2-编写业务逻辑"></a> 2. 编写业务逻辑</h3>
+<ul>
+<li>user/api/internal/logic/hellologic.go</li>
+</ul>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(l *HelloLogic)</span></span> Hello(req *types.HelloReq) (*types.HelloRes, <span class="type">error</span>) &#123;</span><br><span class="line">	msg := fmt.Sprintf(<span class="string">&quot;Hello %s&quot;</span>, req.Name)</span><br><span class="line">	<span class="keyword">return</span> &amp;types.HelloRes&#123;Code: <span class="number">0</span>, Msg: msg&#125;, <span class="literal">nil</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>进入<code>api</code></li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cd api</span><br></pre></td></tr></table></figure>
+<ul>
+<li>启动</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">go run user.go</span><br></pre></td></tr></table></figure>
+<ul>
+<li>访问 <a target="_blank" rel="noopener" href="http://localhost:8888/user/hello?name=hh">http://localhost:8888/user/hello?name=hh</a></li>
+</ul>
+<h3 id="3-model层使用"><a class="markdownIt-Anchor" href="#3-model层使用"></a> 3. model层使用</h3>
+<blockquote>
+<p>可以归纳为以下步骤：</p>
+<ol>
+<li>执行命令生成model文件 goctl model  xxx</li>
+<li>config.go和yaml添加数据库和缓存的配置项</li>
+<li>上下文中注入依赖 servicecontext.go</li>
+<li>使用，从上下文中取出来用，<a target="_blank" rel="noopener" href="http://l.svcCtx.XxxModel.Xxx">l.svcCtx.XxxModel.Xxx</a>()</li>
+</ol>
+<p>另外，model层可以简便的切换为Gorm，但是api层就很难切换为Gin了。</p>
+</blockquote>
+<h4 id="31-model生成"><a class="markdownIt-Anchor" href="#31-model生成"></a> 3.1 model生成</h4>
+<ul>
+<li>在数据库中创建一张user表</li>
+<li>在user目录下创建model目录</li>
+<li>执行命令生成</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">cd user/model</span><br><span class="line">goctl model mysql datasource -url=&quot;root:123456@tcp(127.0.0.1:3306)/go-zero-test&quot; -table=&quot;user&quot; -c -dir .</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">也可以用sql文件</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">goctl model mysql ddl -src user.sql -<span class="built_in">dir</span> . -c</span></span><br></pre></td></tr></table></figure>
+<h4 id="32-配置"><a class="markdownIt-Anchor" href="#32-配置"></a> 3.2 配置</h4>
+<ul>
+<li>添加mysql配置项 <code>vim api/internal/config/config.go</code></li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">package config</span><br><span class="line"></span><br><span class="line">import &quot;github.com/tal-tech/go-zero/rest&quot;</span><br><span class="line"></span><br><span class="line">type Config struct &#123;</span><br><span class="line">    rest.RestConf</span><br><span class="line">    </span><br><span class="line">    Mysql struct&#123;</span><br><span class="line">        DataSource string</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    CacheRedis cache.CacheConf</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>配置文件添加 <code> vim api/etc/user-api.yaml</code></li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">Mysql:</span><br><span class="line">  DataSource: $user:$password@tcp($url)/$db?charset=utf8mb4&amp;parseTime=true&amp;loc=Asia%2FShanghai</span><br><span class="line">CacheRedis:</span><br><span class="line">  - Host: $host</span><br><span class="line">    Pass: $pass</span><br><span class="line">    Type: node</span><br></pre></td></tr></table></figure>
+<h4 id="33-上下文注入model"><a class="markdownIt-Anchor" href="#33-上下文注入model"></a> 3.3 上下文注入model</h4>
+<p><code>api/internal/svc/servicecontext.go</code></p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> ServiceContext <span class="keyword">struct</span> &#123;</span><br><span class="line">    Config    config.Config</span><br><span class="line">    UserModel model.UserModel</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">NewServiceContext</span><span class="params">(c config.Config)</span></span> *ServiceContext &#123;</span><br><span class="line">    conn:=sqlx.NewMysql(c.Mysql.DataSource)</span><br><span class="line">    <span class="keyword">return</span> &amp;ServiceContext&#123;</span><br><span class="line">        Config: c,</span><br><span class="line">        UserModel: model.NewUserModel(conn,c.CacheRedis),</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="34-修改接口文件"><a class="markdownIt-Anchor" href="#34-修改接口文件"></a> 3.4 修改接口文件</h4>
+<ul>
+<li>user.api，添加登录接口</li>
+</ul>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">syntax = <span class="string">&quot;v1&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> (</span><br><span class="line">	HelloReq &#123;</span><br><span class="line">		Name <span class="type">string</span> <span class="string">`form:&quot;name&quot;`</span></span><br><span class="line">	&#125;</span><br><span class="line">	HelloRes &#123;</span><br><span class="line">		Code <span class="type">int</span>    <span class="string">`json:&quot;code&quot;`</span></span><br><span class="line">		Msg  <span class="type">string</span> <span class="string">`json:&quot;msg&quot;`</span></span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	LoginReq &#123;</span><br><span class="line">		Username <span class="type">string</span> <span class="string">`json:&quot;username&quot;`</span></span><br><span class="line">		Password <span class="type">string</span> <span class="string">`json:&quot;password&quot;`</span></span><br><span class="line">	&#125;</span><br><span class="line">	LoginReply &#123;</span><br><span class="line">		Id           <span class="type">int64</span>  <span class="string">`json:&quot;id&quot;`</span></span><br><span class="line">		Name         <span class="type">string</span> <span class="string">`json:&quot;name&quot;`</span></span><br><span class="line">		Gender       <span class="type">string</span> <span class="string">`json:&quot;gender&quot;`</span></span><br><span class="line">		AccessToken  <span class="type">string</span> <span class="string">`json:&quot;accessToken&quot;`</span></span><br><span class="line">		AccessExpire <span class="type">int64</span>  <span class="string">`json:&quot;accessExpire&quot;`</span></span><br><span class="line">		RefreshAfter <span class="type">int64</span>  <span class="string">`json:&quot;refreshAfter&quot;`</span></span><br><span class="line">	&#125;</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">service user-api &#123;</span><br><span class="line">	@handler login</span><br><span class="line">	post /api/user/login (LoginReq) returns (LoginReply)</span><br><span class="line">	</span><br><span class="line">	@handler hello</span><br><span class="line">	get /api/user/hello (HelloReq) returns (HelloRes)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>再次执行goctl更新api</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">goctl api go -api user.api -dir .</span><br></pre></td></tr></table></figure>
+<h4 id="35-逻辑层使用model"><a class="markdownIt-Anchor" href="#35-逻辑层使用model"></a> 3.5 逻辑层使用model</h4>
+<ul>
+<li><code>api/internal/logic/loginlogic.go</code></li>
+</ul>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(l *LoginLogic)</span></span> Login(req types.LoginReq) (*types.LoginReply, <span class="type">error</span>) &#123;</span><br><span class="line">	<span class="keyword">if</span> <span class="built_in">len</span>(strings.TrimSpace(req.Username)) == <span class="number">0</span> || <span class="built_in">len</span>(strings.TrimSpace(req.Password)) == <span class="number">0</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">nil</span>, errors.New(<span class="string">&quot;参数错误&quot;</span>)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	userInfo, err := l.svcCtx.UserModel.FindOneByName(req.Username)</span><br><span class="line">	<span class="keyword">switch</span> err &#123;</span><br><span class="line">	<span class="keyword">case</span> <span class="literal">nil</span>:</span><br><span class="line">	<span class="keyword">case</span> model.ErrNotFound:</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">nil</span>, errors.New(<span class="string">&quot;用户名不存在&quot;</span>)</span><br><span class="line">	<span class="keyword">default</span>:</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">nil</span>, err</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> userInfo.Password != req.Password &#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">nil</span>, errors.New(<span class="string">&quot;用户密码不正确&quot;</span>)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> &amp;types.LoginReply&#123;</span><br><span class="line">		Id:          userInfo.Id,</span><br><span class="line">		Name:        userInfo.Username,</span><br><span class="line">		Gender:      strconv.FormatInt(userInfo.Gender, <span class="number">10</span>),</span><br><span class="line">	&#125;, <span class="literal">nil</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>model自动生成的只有简单的增删改查，没有根据字段名的查询，这里可以自己实现<code>FindOneByName</code>函数</li>
+</ul>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(m *defaultUserModel)</span></span> FindOneByName(username <span class="type">string</span>) (*User, <span class="type">error</span>) &#123;</span><br><span class="line">	<span class="keyword">var</span> resp User</span><br><span class="line">	query := <span class="string">&quot;select * from user where username = ? limit 1;&quot;</span></span><br><span class="line">	err := m.QueryRowNoCache(&amp;resp, query, username)</span><br><span class="line">	<span class="keyword">switch</span> err &#123;</span><br><span class="line">	<span class="keyword">case</span> <span class="literal">nil</span>:</span><br><span class="line">		<span class="keyword">return</span> &amp;resp, <span class="literal">nil</span></span><br><span class="line">	<span class="keyword">case</span> sqlc.ErrNotFound:</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">nil</span>, ErrNotFound</span><br><span class="line">	<span class="keyword">default</span>:</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">nil</span>, err</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="4-jwt的使用"><a class="markdownIt-Anchor" href="#4-jwt的使用"></a> 4. jwt的使用</h3>
+<blockquote>
+<p>步骤归纳：</p>
+<ol>
+<li>config.go和yaml添加Auth配置项</li>
+<li>编写token生成函数</li>
+<li>需要鉴权的接口在api文件中添加jwt:Auth声明</li>
+<li>重新执行命令生成api代码</li>
+</ol>
+</blockquote>
+<h3 id="5-中间件"><a class="markdownIt-Anchor" href="#5-中间件"></a> 5. 中间件</h3>
+<blockquote>
+<p>步骤归纳：</p>
+<ol>
+<li>api文件中添加middleware声明</li>
+<li>重新执行命令生成api代码</li>
+<li>上下文中注入依赖</li>
+<li>编写中间件的Handle 处理逻辑</li>
+</ol>
+</blockquote>
+<h3 id="6-rpc服务"><a class="markdownIt-Anchor" href="#6-rpc服务"></a> 6. rpc服务</h3>
+<h4 id="61-创建服务"><a class="markdownIt-Anchor" href="#61-创建服务"></a> 6.1 创建服务</h4>
+<ul>
+<li>编写proto文件</li>
+</ul>
+<figure class="highlight protobuf"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">vim user/<span class="function"><span class="keyword">rpc</span>/user.proto</span></span><br><span class="line"><span class="function"></span></span><br><span class="line"><span class="function">syntax = &quot;proto3&quot;</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">package</span> user;</span><br><span class="line"></span><br><span class="line"><span class="keyword">option</span> go_package = <span class="string">&quot;user&quot;</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">message </span><span class="title class_">IdReq</span>&#123;</span><br><span class="line">  <span class="type">int64</span> id = <span class="number">1</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">message </span><span class="title class_">UserInfoReply</span>&#123;</span><br><span class="line">  <span class="type">int64</span> id = <span class="number">1</span>;</span><br><span class="line">  <span class="type">string</span> name = <span class="number">2</span>;</span><br><span class="line">  <span class="type">string</span> gender = <span class="number">3</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">service </span><span class="title class_">user</span> &#123;</span><br><span class="line">  <span class="function"><span class="keyword">rpc</span> getUser(IdReq) <span class="keyword">returns</span>(UserInfoReply)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>生成rpc代码</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cd service/user/rpc</span><br><span class="line">goctl rpc proto -src user.proto -dir .</span><br></pre></td></tr></table></figure>
+<ul>
+<li>
+<p>如果使用了数据库和缓存记得修改config.go和yaml</p>
+</li>
+<li>
+<p>yaml添加etcd配置</p>
+</li>
+</ul>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">Etcd:</span></span><br><span class="line">  <span class="attr">Hosts:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span><span class="string">:2379</span></span><br><span class="line">    <span class="attr">Key:</span> <span class="string">user.rpc</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li>
+<p>如果调用了model层，记得在上下文中注入依赖（svc下servicecontext.go）</p>
+</li>
+<li>
+<p>编写逻辑层</p>
+</li>
+</ul>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(l *GetUserLogic)</span></span> GetUser(in *user.IdReq) (*user.UserInfoReply, <span class="type">error</span>) &#123;</span><br><span class="line">    one, err := l.svcCtx.UserModel.FindOne(in.Id)</span><br><span class="line">    <span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">nil</span>, err</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> &amp;user.UserInfoReply&#123;</span><br><span class="line">        Id:     one.Id,</span><br><span class="line">        Name:   one.Name,</span><br><span class="line">        Number: one.Number,</span><br><span class="line">        Gender: one.Gender,</span><br><span class="line">    &#125;, <span class="literal">nil</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>调用rpc</li>
+</ul>
+<h4 id="62-调用服务"><a class="markdownIt-Anchor" href="#62-调用服务"></a> 6.2 调用服务</h4>
+<blockquote>
+<p>可以归纳为以下步骤：</p>
+<ol>
+<li>config.go和yaml添加rpc服务端的配置项</li>
+<li>上下文中注入依赖</li>
+<li>逻辑层可以从上下文中取出来调用</li>
+</ol>
+</blockquote>
+<ul>
+<li>在调用端的config.go中加入rpc服务端的配置项</li>
+</ul>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> Config <span class="keyword">struct</span> &#123;</span><br><span class="line">     rest.RestConf</span><br><span class="line">     Auth <span class="keyword">struct</span> &#123;</span><br><span class="line">         AccessSecret <span class="type">string</span></span><br><span class="line">         AccessExpire <span class="type">int64</span></span><br><span class="line">     &#125;</span><br><span class="line">     UserRpc zrpc.RpcClientConf</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>yaml中添加rpc服务端的配置</li>
+</ul>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">UserRpc:</span></span><br><span class="line">    <span class="attr">Etcd:</span></span><br><span class="line">      <span class="attr">Hosts:</span></span><br><span class="line">        <span class="bullet">-</span> <span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span><span class="string">:2379</span></span><br><span class="line">      <span class="attr">Key:</span> <span class="string">user.rpc</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li>上下文注入依赖(servicecontext.go)</li>
+</ul>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> ServiceContext <span class="keyword">struct</span> &#123;</span><br><span class="line">	Config    config.Config</span><br><span class="line">	...</span><br><span class="line">	UserRpc   userclient.User</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">NewServiceContext</span><span class="params">(c config.Config)</span></span> *ServiceContext &#123;</span><br><span class="line">	<span class="keyword">return</span> &amp;ServiceContext&#123;</span><br><span class="line">		Config:    c,</span><br><span class="line">		...</span><br><span class="line">		UserRpc:   userclient.NewUser(zrpc.MustNewClient(c.UserRpc)),</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>逻辑层调用</li>
+</ul>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(l *PingLogic)</span></span> Ping() <span class="type">error</span> &#123;</span><br><span class="line">	fmt.Println(<span class="string">&quot;ping...&quot;</span>)</span><br><span class="line">    </span><br><span class="line">	user, err := l.svcCtx.UserRpc.GetUser(l.ctx, &amp;userclient.IdReq&#123;Id: <span class="number">3</span>&#125;)</span><br><span class="line">	fmt.Println(user, err)</span><br><span class="line">    </span><br><span class="line">    fmt.Println(<span class="string">&quot;api调用rpc咯&quot;</span>)</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">nil</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<hr />
+<h3 id="7-自适应降载保护"><a class="markdownIt-Anchor" href="#7-自适应降载保护"></a> 7. <code>// 自适应降载保护</code></h3>
+<blockquote>
+<p>讲白了就是根据CPU压力来保护服务，压力过高时拒绝新的请求，直到当前积攒的请求处理完、CPU压力降下来后再次开放</p>
+<p>但是目前我还测不出来，不知道是不是因为在windows上的原因，读取不到cpu使用率，从stat日志打出来的内容可以看到每次读取的cpu使用率都是0</p>
+</blockquote>
+<ul>
+<li>在rest和zrpc框架里有可选激活配置</li>
+<li>CpuThreshold，0-1000，默认值900，如果把值设置为大于0的值，则激活该服务的自动降载机制</li>
+<li>如果请求被drop，那么错误日志里会有<code>dropped</code>关键字</li>
+<li><a target="_blank" rel="noopener" href="https://go-zero.dev/cn/loadshedding.html">官方文档</a></li>
+</ul>
+<hr />
+<h3 id="8-熔断"><a class="markdownIt-Anchor" href="#8-熔断"></a> 8. 熔断</h3>
+<ul>
+<li>在gprc调用中已经内置了，无需额外编码</li>
+<li><a target="_blank" rel="noopener" href="https://go-zero.dev/cn/breaker-algorithms.html">熔断的算法看官方文档</a></li>
+<li>测试起来比较简单
+<ul>
+<li>一个api接口、一个rpc接口，api接口调用rpc</li>
+<li>rpc接口内延时1秒，返回错误</li>
+<li>连续请求api接口，会发现刚开始会等待1秒后才接收到响应，到后面已经是瞬间失败了，说明api接口没有再去调用rpc</li>
+</ul>
+</li>
+</ul>
+<hr />
+<h3 id="9-并发限制"><a class="markdownIt-Anchor" href="#9-并发限制"></a> 9. 并发限制</h3>
+<ul>
+<li>RestConf中有有一个MaxConns配置用来限制并发数量</li>
+<li>当程序中未处理完毕、未返回响应的请求数量超过此配置，后续请求将被直接拒绝</li>
+</ul>
+<hr />
+<h3 id="10-引擎并发控制方案-periodlimit"><a class="markdownIt-Anchor" href="#10-引擎并发控制方案-periodlimit"></a> 10. 引擎并发控制方案 - PeriodLimit</h3>
+<blockquote>
+<p>通过对zo-zero框架的了解，认为可以将其限流工具-PeriodLimit 作为引擎的并发控制方案之一</p>
+</blockquote>
+<ul>
+<li>举个栗子，在3秒钟内，允许他10个并发</li>
+</ul>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> (</span><br><span class="line">		seconds = <span class="number">3</span></span><br><span class="line">		quota   = <span class="number">10</span></span><br><span class="line">	)</span><br><span class="line">l := limit.NewPeriodLimit(seconds, quota, redis.NewRedis(<span class="string">&quot;127.0.0.1:6379&quot;</span>, redis.NodeType), <span class="string">&quot;periodlimit&quot;</span>)</span><br></pre></td></tr></table></figure>
+<ul>
+<li>do函数假设是调用引擎的处理函数，而这个函数执行完毕需要耗时3秒</li>
+</ul>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">do</span><span class="params">(l *limit.PeriodLimit, userID <span class="type">string</span>, i <span class="type">int</span>)</span></span> &#123;</span><br><span class="line">    <span class="comment">// 通过 l.Take 传入的 key 来区分用户</span></span><br><span class="line">	code, err := l.Take(userID)</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		logx.Error(err)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 耗时3秒</span></span><br><span class="line">	time.Sleep(time.Second*<span class="number">3</span>)</span><br><span class="line"></span><br><span class="line">	<span class="keyword">switch</span> code &#123;</span><br><span class="line">	<span class="keyword">case</span> limit.OverQuota:  <span class="comment">// 超出限制</span></span><br><span class="line">		logx.Errorf(<span class="string">&quot;OverQuota key: %v&quot;</span>, i)</span><br><span class="line">	<span class="keyword">case</span> limit.Allowed:    <span class="comment">// 在限制范围内</span></span><br><span class="line">		logx.Infof(<span class="string">&quot;AllowedQuota key: %v&quot;</span>, i)</span><br><span class="line">	<span class="keyword">case</span> limit.HitQuota:   <span class="comment">// 达到限制的临界点</span></span><br><span class="line">		logx.Errorf(<span class="string">&quot;HitQuota key: %v&quot;</span>, i)</span><br><span class="line">	<span class="keyword">default</span>:</span><br><span class="line">		logx.Errorf(<span class="string">&quot;DefaultQuota key: %v&quot;</span>, i)</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>调用</li>
+</ul>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> i := <span class="number">0</span>; i &lt; <span class="number">100</span>; i++ &#123;</span><br><span class="line">	<span class="keyword">go</span> do(l, <span class="string">&quot;user1&quot;</span>, i)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>
+<p>优点：</p>
+<ul>
+<li>使用简单、开箱即用；</li>
+<li>基于 <code>redis</code> 计数器，通过调用 <code>redis lua script</code>，保证计数过程的原子性，同时也支持分布式情况下正常计数；</li>
+</ul>
+</li>
+<li>
+<p>缺点：</p>
+<ul>
+<li>
+<p>初始化时传入的时间限制与实际引擎调用的时间需要尽可能接近，否则会有误差；</p>
+</li>
+<li>
+<p>要记录时间窗口内的所有行为记录，如果这个量特别大的时候，内存消耗会变得非常严重；</p>
+</li>
+</ul>
+</li>
+</ul>
+<hr />
+
+      
+    </div>
+    <div class="article-footer">
+      <blockquote class="mt-2x">
+  <ul class="post-copyright list-unstyled">
+    
+    <li class="post-copyright-link hidden-xs">
+      <strong>本文链接：</strong>
+      <a href="https://www.yanwq.com/2024/03/20/go-zero%E4%BD%BF%E7%94%A8%E6%96%87%E6%A1%A3/" title="go-zero的基本使用" target="_blank" rel="external">https://www.yanwq.com/2024/03/20/go-zero使用文档/</a>
+    </li>
+    
+    <li class="post-copyright-license">
+      <strong>版权声明： </strong> 本博客所有文章除特别声明外，均采用 <a href="http://creativecommons.org/licenses/by/4.0/deed.zh" target="_blank" rel="external">CC BY 4.0 CN协议</a> 许可协议。转载请注明出处！
+    </li>
+  </ul>
+</blockquote>
+
+
+<div class="panel panel-default panel-badger">
+  <div class="panel-body">
+    <figure class="media">
+      <div class="media-left">
+        <a href="https://github.com/ywq0811" target="_blank" class="img-burn thumb-sm visible-lg">
+          <img src="/images/avatar.jpg" class="img-rounded w-full" alt="">
+        </a>
+      </div>
+      <div class="media-body">
+        <h3 class="media-heading"><a href="https://github.com/ywq0811" target="_blank"><span class="text-dark">yanwq</span><small class="ml-1x">Go Developer</small></a></h3>
+        <div>个人简介。</div>
+      </div>
+    </figure>
+  </div>
+</div>
+
+
+    </div>
+  </article>
+  
+    
+  <section id="comments">
+  	
+
+    
+  </section>
+
+
+  
+</div>
+
+  <nav class="bar bar-footer clearfix" data-stick-bottom>
+  <div class="bar-inner">
+  
+  <ul class="pager pull-left">
+    
+    <li class="prev">
+      <a href="/2024/03/20/linux%E6%89%A7%E8%A1%8Cmysql%E5%91%BD%E4%BB%A4/" title="Linux执行mysql命令"><i class="icon icon-angle-left" aria-hidden="true"></i><span>&nbsp;&nbsp;上一篇</span></a>
+    </li>
+    
+    
+    <li class="next">
+      <a href="/2024/03/20/163%E9%82%AE%E7%AE%B1%E4%BD%BF%E7%94%A8smtp%E6%9C%8D%E5%8A%A1%E5%8F%91%E9%80%81/" title="163邮箱使用smtp服务发送消息"><span>下一篇&nbsp;&nbsp;</span><i class="icon icon-angle-right" aria-hidden="true"></i></a>
+    </li>
+    
+    
+    <li class="toggle-toc">
+      <a class="toggle-btn " data-toggle="collapse" href="#collapseToc" aria-expanded="false" title="文章目录" role="button">    <span>[&nbsp;</span><span>文章目录</span>
+        <i class="text-collapsed icon icon-anchor"></i>
+        <i class="text-in icon icon-close"></i>
+        <span>]</span>
+      </a>
+    </li>
+    
+  </ul>
+  
+  
+  
+  <div class="bar-right">
+    
+  </div>
+  </div>
+</nav>
+  
+
+
+</main>
+
+  <footer class="footer" itemscope itemtype="http://schema.org/WPFooter">
+	
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/ywq0811" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+    </ul>
+
+    <div class="copyright">
+    	
+        <div class="publishby">
+        	Theme by <a href="https://github.com/cofess" target="_blank"> cofess </a>base on <a href="https://github.com/cofess/hexo-theme-pure" target="_blank">pure</a>.
+        </div>
+    </div>
+</footer>
+  <script src="//cdn.jsdelivr.net/npm/jquery@1.12.4/dist/jquery.min.js"></script>
+<script>
+window.jQuery || document.write('<script src="js/jquery.min.js"><\/script>')
+</script>
+
+<script src="/js/plugin.min.js"></script>
+
+
+<script src="/js/application.js"></script>
+
+
+    <script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(未命名)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+
+<script src="/js/insight.js"></script>
+
+
+
+
+
+
+   
+
+
+
+
+   
+    
+<script src="//cdn.jsdelivr.net/npm/gitment@0.0.3/dist/gitment.browser.min.js"></script>
+<script>
+var gitment = new Gitment({
+  // id默认为当前页面url，如果url后带参数或锚点，gitment要重新初始化
+  // https://github.com/imsun/gitment/issues/55
+  // 解决方案：id:window.location.pathname,或者将id设置为当前页面标题
+  id: 'go-zero的基本使用', 
+  owner: '', // 可以是你的GitHub用户名，也可以是github id
+  repo: '',
+  oauth: {
+    client_id: '',
+    client_secret: '',
+  }
+})
+gitment.render('comments')
+</script>
+
+
+
+
+
+
+
+
+
+</body>
+</html>
