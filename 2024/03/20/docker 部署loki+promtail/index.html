@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+  <meta charset="utf-8">
+  
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="Cache-Control" content="no-transform" />
+  <meta http-equiv="Cache-Control" content="no-siteapp" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="format-detection" content="telephone=no,email=no,adress=no">
+  <!-- Color theme for statusbar -->
+  <meta name="theme-color" content="#000000" />
+  <!-- 强制页面在当前窗口以独立页面显示,防止别人在框架里调用页面 -->
+  <meta http-equiv="window-target" content="_top" />
+  
+  
+  <title>docker部署loki+promtail | yanwq</title>
+  <meta name="description" content="docker部署loki+promtail  loki 1.拉取镜像 1docker pull grafana&#x2F;loki:2.1.0 注：本文档适用2.1.0，不适合2.7.3版本，启动服务的时候会报wal错误 2.新建配置文件 12345678mkdir -p &#x2F;home&#x2F;loki     #创建loki文件夹mkdir -p &#x2F;home&#x2F;loki&#x2F;index  #创建index文件夹 mkd">
+<meta property="og:type" content="article">
+<meta property="og:title" content="docker部署loki+promtail">
+<meta property="og:url" content="https://www.yanwq.com/2024/03/20/docker%20%E9%83%A8%E7%BD%B2loki+promtail/index.html">
+<meta property="og:site_name" content="yanwq">
+<meta property="og:description" content="docker部署loki+promtail  loki 1.拉取镜像 1docker pull grafana&#x2F;loki:2.1.0 注：本文档适用2.1.0，不适合2.7.3版本，启动服务的时候会报wal错误 2.新建配置文件 12345678mkdir -p &#x2F;home&#x2F;loki     #创建loki文件夹mkdir -p &#x2F;home&#x2F;loki&#x2F;index  #创建index文件夹 mkd">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://www.yanwq.com/imgs/image-20230707155443566.png">
+<meta property="og:image" content="https://www.yanwq.com/imgs/image-20230707154011354.png">
+<meta property="og:image" content="https://www.yanwq.com/imgs/image-20230707155839036.png">
+<meta property="og:image" content="https://www.yanwq.com/imgs/image-20230707160032533.png">
+<meta property="og:image" content="https://www.yanwq.com/imgs/image-20230707160046360.png">
+<meta property="og:image" content="https://www.yanwq.com/imgs/image-20230707160144473.png">
+<meta property="og:image" content="https://www.yanwq.com/imgs/image-20230707160249769.png">
+<meta property="og:image" content="https://www.yanwq.com/imgs/image-20230707160316228.png">
+<meta property="og:image" content="https://www.yanwq.com/imgs/image-20230707160353065.png">
+<meta property="article:published_time" content="2024-03-20T06:48:17.932Z">
+<meta property="article:modified_time" content="2024-03-20T07:09:27.466Z">
+<meta property="article:author" content="yanwq">
+<meta property="article:tag" content="grafana">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://www.yanwq.com/imgs/image-20230707155443566.png">
+  <!-- Canonical links -->
+  <link rel="canonical" href="https://www.yanwq.com/2024/03/20/docker%20%E9%83%A8%E7%BD%B2loki+promtail/index.html">
+  
+    <link rel="alternate" href="/atom.xml" title="yanwq" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+  
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitment@0.0.3/style/default.min.css">
+  
+  
+  
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?b839d137c29d9b42d962e7accfbb17ce";
+  var s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body class="main-center theme-black" itemscope itemtype="http://schema.org/WebPage">
+  <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+  <div class="slimContent">
+    <div class="navbar-header">
+      
+      
+      <div class="profile-block text-center">
+        <a id="avatar" href="https://github.com/ywq0811" target="_blank">
+          <img class="img-circle img-rotate" src="/images/avatar.jpg" width="200" height="200">
+        </a>
+        <h2 id="name" class="hidden-xs hidden-sm">yanwq</h2>
+        <h3 id="title" class="hidden-xs hidden-sm hidden-md">Go Developer</h3>
+        <small id="location" class="text-muted hidden-xs hidden-sm"><i class="icon icon-map-marker"></i> Xiamen, China</small>
+      </div>
+      
+      <div class="search" id="search-form-wrap">
+
+    <form class="search-form sidebar-form">
+        <div class="input-group">
+            <input type="text" class="search-form-input form-control" placeholder="搜索" />
+            <span class="input-group-btn">
+                <button type="submit" class="search-form-submit btn btn-flat" onclick="return false;"><i class="icon icon-search"></i></button>
+            </span>
+        </div>
+    </form>
+    <div class="ins-search">
+  <div class="ins-search-mask"></div>
+  <div class="ins-search-container">
+    <div class="ins-input-wrapper">
+      <input type="text" class="ins-search-input" placeholder="想要查找什么..." x-webkit-speech />
+      <button type="button" class="close ins-close ins-selectable" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+    </div>
+    <div class="ins-section-wrapper">
+      <div class="ins-section-container"></div>
+    </div>
+  </div>
+</div>
+
+
+</div>
+      <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#main-navbar" aria-controls="main-navbar" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <nav id="main-navbar" class="collapse navbar-collapse" itemscope itemtype="http://schema.org/SiteNavigationElement" role="navigation">
+      <ul class="nav navbar-nav main-nav ">
+        
+        
+        <li class="menu-item menu-item-home">
+          <a href="/.">
+            
+            <i class="icon icon-home-fill"></i>
+            
+            <span class="menu-title">首页</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives">
+            
+            <i class="icon icon-archives-fill"></i>
+            
+            <span class="menu-title">归档</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories">
+            
+            <i class="icon icon-folder"></i>
+            
+            <span class="menu-title">分类</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags">
+            
+            <i class="icon icon-tags"></i>
+            
+            <span class="menu-title">标签</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-repository">
+          <a href="/repository">
+            
+            <i class="icon icon-project"></i>
+            
+            <span class="menu-title">项目</span>
+          </a>
+        </li>
+        
+      </ul>
+      
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/ywq0811" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+    </ul>
+
+    </nav>
+  </div>
+</header>
+
+  
+    <aside class="sidebar" itemscope itemtype="http://schema.org/WPSideBar">
+  <div class="slimContent">
+    
+      <div class="widget">
+    <h3 class="widget-title">公告</h3>
+    <div class="widget-body">
+        <div id="board">
+            <div class="content">
+                <p>欢迎交流与分享经验!</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">分类</h3>
+    <div class="widget-body">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/DB/">DB</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Docker/">Docker</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Go/">Go</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Proto/">Proto</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Ubuntu/">Ubuntu</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Windows/">Windows</a><span class="category-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget-body">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/consul/" rel="tag">consul</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cron/" rel="tag">cron</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/db/" rel="tag">db</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/" rel="tag">docker</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/es/" rel="tag">es</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/go/" rel="tag">go</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/go-zero/" rel="tag">go-zero</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/grafana/" rel="tag">grafana</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/https/" rel="tag">https</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/" rel="tag">mysql</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/oracle/" rel="tag">oracle</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/proto/" rel="tag">proto</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ubuntu/" rel="tag">ubuntu</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/wsl2/" rel="tag">wsl2</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签云</h3>
+    <div class="widget-body tagcloud">
+      <a href="/tags/consul/" style="font-size: 14px;">consul</a> <a href="/tags/cron/" style="font-size: 13px;">cron</a> <a href="/tags/db/" style="font-size: 13px;">db</a> <a href="/tags/docker/" style="font-size: 13px;">docker</a> <a href="/tags/es/" style="font-size: 13px;">es</a> <a href="/tags/go/" style="font-size: 13px;">go</a> <a href="/tags/go-zero/" style="font-size: 13px;">go-zero</a> <a href="/tags/grafana/" style="font-size: 14px;">grafana</a> <a href="/tags/https/" style="font-size: 13px;">https</a> <a href="/tags/mysql/" style="font-size: 13px;">mysql</a> <a href="/tags/oracle/" style="font-size: 13px;">oracle</a> <a href="/tags/proto/" style="font-size: 13px;">proto</a> <a href="/tags/ubuntu/" style="font-size: 13px;">ubuntu</a> <a href="/tags/wsl2/" style="font-size: 13px;">wsl2</a>
+    </div>
+  </div>
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget-body">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/03/">三月 2024</a><span class="archive-list-count">15</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget-body">
+      <ul class="recent-post-list list-unstyled no-thumbnail">
+        
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/Go/">Go</a>
+              </p>
+              <p class="item-title">
+                <a href="/2024/03/20/order%E6%89%93%E5%8C%85/" class="title">go-zero 生成和打包api和rpc</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2024-03-20T06:50:10.519Z" itemprop="datePublished">2024-03-20</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/Ubuntu/">Ubuntu</a>
+              </p>
+              <p class="item-title">
+                <a href="/2024/03/20/wsl2-ubuntu%E8%A3%85go/" class="title">wsl2-Ubuntu 安装 go</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2024-03-20T06:49:47.684Z" itemprop="datePublished">2024-03-20</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/Docker/">Docker</a>
+              </p>
+              <p class="item-title">
+                <a href="/2024/03/20/docker%E9%83%A8%E7%BD%B2mysql5.7%E6%96%87%E6%A1%A3/" class="title">docker 部署mysql</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2024-03-20T06:49:21.020Z" itemprop="datePublished">2024-03-20</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/Docker/">Docker</a>
+              </p>
+              <p class="item-title">
+                <a href="/2024/03/20/docker%E9%83%A8%E7%BD%B2es%E6%95%B0%E6%8D%AE%E5%BA%93/" class="title">docker部署es数据库</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2024-03-20T06:48:51.457Z" itemprop="datePublished">2024-03-20</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/Docker/">Docker</a>
+              </p>
+              <p class="item-title">
+                <a href="/2024/03/20/docker%20consul%20%E9%9B%86%E7%BE%A4%E9%83%A8%E7%BD%B2%E9%AA%8C%E8%AF%81/" class="title">docker consul 集群部署验证</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2024-03-20T06:48:46.201Z" itemprop="datePublished">2024-03-20</time>
+              </p>
+            </div>
+          </li>
+          
+      </ul>
+    </div>
+  </div>
+  
+
+    
+  </div>
+</aside>
+
+  
+  
+  <aside class="sidebar sidebar-toc collapse   in  " id="collapseToc" itemscope itemtype="http://schema.org/WPSideBar">
+  <div class="slimContent">
+    <nav id="toc" class="article-toc">
+      <h3 class="toc-title">文章目录</h3>
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#docker%E9%83%A8%E7%BD%B2lokipromtail"><span class="toc-number">1.</span> <span class="toc-text"> docker部署loki+promtail</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#loki"><span class="toc-number">1.0.1.</span> <span class="toc-text"> loki</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#promtail"><span class="toc-number">1.0.2.</span> <span class="toc-text"> promtail</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#grafana%E7%95%8C%E9%9D%A2%E9%85%8D%E7%BD%AE"><span class="toc-number">1.0.3.</span> <span class="toc-text"> grafana界面配置</span></a></li></ol></li></ol></li></ol>
+    </nav>
+  </div>
+</aside>
+
+<main class="main" role="main">
+  <div class="content">
+  <article id="post-docker 部署loki+promtail" class="article article-type-post" itemscope itemtype="http://schema.org/BlogPosting">
+    
+    <div class="article-header">
+      
+        
+  
+    <h1 class="article-title" itemprop="name">
+      docker部署loki+promtail
+    </h1>
+  
+
+      
+      <div class="article-meta">
+        <span class="article-date">
+    <i class="icon icon-calendar-check"></i>
+	<a href="/2024/03/20/docker%20%E9%83%A8%E7%BD%B2loki+promtail/" class="article-date">
+	  <time datetime="2024-03-20T06:48:17.932Z" itemprop="datePublished">2024-03-20</time>
+	</a>
+</span>
+        
+  <span class="article-category">
+    <i class="icon icon-folder"></i>
+    <a class="article-category-link" href="/categories/Docker/">Docker</a>
+  </span>
+
+        
+  <span class="article-tag">
+    <i class="icon icon-tags"></i>
+	<a class="article-tag-link-link" href="/tags/grafana/" rel="tag">grafana</a>
+  </span>
+
+
+        
+
+        <span class="post-comment"><i class="icon icon-comment"></i> <a href="/2024/03/20/docker%20%E9%83%A8%E7%BD%B2loki+promtail/#comments" class="article-comment-link">评论</a></span>
+        
+	
+		<span class="post-wordcount hidden-xs" itemprop="wordCount">字数统计: 1.1k(字)</span>
+	
+	
+		<span class="post-readcount hidden-xs" itemprop="timeRequired">阅读时长: 5(分)</span>
+	
+
+      </div>
+    </div>
+    <div class="article-entry marked-body" itemprop="articleBody">
+      
+        <h2 id="docker部署lokipromtail"><a class="markdownIt-Anchor" href="#docker部署lokipromtail"></a> docker部署loki+promtail</h2>
+<h4 id="loki"><a class="markdownIt-Anchor" href="#loki"></a> loki</h4>
+<p>1.拉取镜像</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker pull grafana/loki:<span class="number">2.1</span><span class="number">.0</span></span><br></pre></td></tr></table></figure>
+<p>注：本文档适用2.1.0，不适合2.7.3版本，启动服务的时候会报wal错误</p>
+<p>2.新建配置文件</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">mkdir -p /home/loki     #创建loki文件夹</span><br><span class="line">mkdir -p /home/loki/index  #创建index文件夹 </span><br><span class="line">mkdir -p /home/loki/chunks #创建chunks文件夹</span><br><span class="line">chmod -R 777 /home/loki/index  #提权</span><br><span class="line">chmod -R 777 /home/loki/chunks  #提权</span><br><span class="line">cd /home/loki</span><br><span class="line">touch loki-config.yaml //创建loki-config配置文件</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>3.打开配置文件</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br></pre></td><td class="code"><pre><span class="line">vim loki-config.yaml</span><br><span class="line"></span><br><span class="line">-----</span><br><span class="line">auth_enabled: false   #是否启用身份验证，如果设置true。需要提供有效的用户名和密码才能访问loki</span><br><span class="line"></span><br><span class="line">server:</span><br><span class="line">  http_listen_port: 3100  #定义loki实例监听的地址和端口</span><br><span class="line">  grpc_listen_port: 3110  #定义loki grpc监听的地址和端口</span><br><span class="line">  grpc_server_max_recv_msg_size: 1073741824  #grpc最大接收消息值，默认4m</span><br><span class="line">  grpc_server_max_send_msg_size: 1073741824  #grpc最大发送消息值，默认4m</span><br><span class="line"></span><br><span class="line">ingester:</span><br><span class="line">  lifecycler:</span><br><span class="line">    address: 127.0.0.1  </span><br><span class="line">    ring:</span><br><span class="line">      kvstore:</span><br><span class="line">        store: inmemory</span><br><span class="line">      replication_factor: 1</span><br><span class="line">    final_sleep: 0s</span><br><span class="line">  chunk_idle_period: 5m</span><br><span class="line">  chunk_retain_period: 30s</span><br><span class="line">  max_transfer_retries: 0</span><br><span class="line">  max_chunk_age: 20m  #一个timeseries块在内存中的最大持续时间。如果timeseries运行的时间超过此时间，则当前块将刷新到存储并创建一个新块</span><br><span class="line"></span><br><span class="line">schema_config:</span><br><span class="line">  configs:</span><br><span class="line">    - from: 2021-01-01</span><br><span class="line">      store: boltdb</span><br><span class="line">      object_store: filesystem</span><br><span class="line">      schema: v11</span><br><span class="line">      index:</span><br><span class="line">        prefix: index_</span><br><span class="line">        period: 168h</span><br><span class="line"></span><br><span class="line">storage_config:</span><br><span class="line">  boltdb:</span><br><span class="line">    directory: /home/loki/index #存储索引地址</span><br><span class="line">  filesystem:</span><br><span class="line">    directory: /home/loki/chunks</span><br><span class="line"></span><br><span class="line">limits_config:</span><br><span class="line">  enforce_metric_name: false</span><br><span class="line">  reject_old_samples: true</span><br><span class="line">  reject_old_samples_max_age: 168h</span><br><span class="line">  ingestion_rate_mb: 30  #修改每用户摄入速率限制，即每秒样本量，默认值为4M</span><br><span class="line">  ingestion_burst_size_mb: 15  #修改每用户摄入速率限制，即每秒样本量，默认值为6M</span><br><span class="line"></span><br><span class="line">chunk_store_config:</span><br><span class="line">        #max_look_back_period: 168h   #回看日志行的最大时间，只适用于即时日志</span><br><span class="line">        max_look_back_period: 0s</span><br><span class="line"></span><br><span class="line">table_manager:</span><br><span class="line">  retention_deletes_enabled: false #日志保留周期开关，默认为false</span><br><span class="line">  retention_period: 0s  #日志保留周期</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>4.启动容器</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">docker run -d --restart always -p 3100:3100  --privileged=true --name loki -v /home/loki:/mnt/config -v /home/loki/index:/opt/loki/index -v /home/loki/chunks:/opt/loki/chunks grafana/loki:2.0.1 -config.file=/mnt/config/loki-config.yaml</span><br><span class="line"></span><br><span class="line">复用修改宿主机挂载的路径即可</span><br></pre></td></tr></table></figure>
+<p>5.验证</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">curl http://127.0.0.1:3100/api/prom/label</span><br><span class="line">curl localhost:3100/loki/api/v1/labels</span><br><span class="line"></span><br><span class="line">注：第一个curl如果返回&#123;&#125;或者空，则失败，查看配置文件或者查看日志排查原因</span><br></pre></td></tr></table></figure>
+<p><img src="/imgs/image-20230707155443566.png" alt="image-20230707155443566" /></p>
+<h4 id="promtail"><a class="markdownIt-Anchor" href="#promtail"></a> promtail</h4>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">promtail 是日志收集器，用于将日志发送到loki进行存储和分析。promtail 可以以代理的方式运行在应用程序所在的主机上，通过监控日志文件或者通过日志文件的标准输出来收集日志信息。</span><br><span class="line"></span><br><span class="line">Promtail将收集到的日志数据结构化为Loki所需的格式，并将其发送到Loki实例中。Loki则负责对日志进行存储，并提供查询和浏览日志的功能。</span><br></pre></td></tr></table></figure>
+<p>根据上面的定义，promtail一般部署在应用程序所在服务器上。此文档拿tts-svc-dev应用程序来当例子，收集tts-svc-dev的日志发送给loki。所以promtail部署在tts-svc-dev服务器上（192.168.26.74:3200）</p>
+<p>1.拉取镜像</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker pull grafana/promtail:2.1.0</span><br></pre></td></tr></table></figure>
+<p>2.创建文件夹</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">mkdir -p /home/kst/aihc/promtail</span><br><span class="line">cd /home/kst/aihc/promtail</span><br><span class="line">touch promtail-config.yaml</span><br></pre></td></tr></table></figure>
+<p>3.打开配置文件</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">vim promtail-config.yaml</span><br><span class="line"></span><br><span class="line">------</span><br><span class="line">server:</span><br><span class="line">  http_listen_port: 9080 #云服务器需开放9080端口</span><br><span class="line">  grpc_listen_port: 0</span><br><span class="line"></span><br><span class="line">positions:</span><br><span class="line">  filename: /tmp/positions.yaml</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">把loki当客户端连接</span></span><br><span class="line">clients:</span><br><span class="line">  - url: http://192.168.2.50:3100/loki/api/v1/push #这里修改实际loki的ip：port</span><br><span class="line"></span><br><span class="line">scrape_configs:</span><br><span class="line">  - job_name: tts-svc-dev  #标签，用于查询</span><br><span class="line">    #pipeline_stages:</span><br><span class="line">    static_configs:</span><br><span class="line">    - targets:</span><br><span class="line">       - localhost</span><br><span class="line">      labels:</span><br><span class="line">       #标签，用于后面的查询 </span><br><span class="line">       job: tts-svc-dev</span><br><span class="line">       __path__: /var/log/tts-svc-dev/*.log #注意，这里的路径是映射主机的/data/aihc/tts-svc/dev/log目录的容器里的目录，指的是容器里面映射的路径</span><br></pre></td></tr></table></figure>
+<p>4.启动容器</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">docker run -d --name promtail --privileged=true -p 9080:9080 -m 1024m -v /home/kst/aihc/promtail:/mnt/config -v /data/aihc/tts-svc/dev/log:/var/log/tts-svc-dev/ -v /etc/localtime:/etc/localtime:ro grafana/promtail:2.1.0 -config.file=/mnt/config/promtail-config.yaml</span><br><span class="line"></span><br><span class="line">注： 这里需要把宿主机tts-svc日志存储路径挂载进容器里面， 对应配置文件的_path_参数</span><br></pre></td></tr></table></figure>
+<p>5.验证</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl &quot;http://192.168.2.50:3100/api/prom/label&quot;  #实际loki的ip:port</span><br></pre></td></tr></table></figure>
+<p><img src="/imgs/image-20230707154011354.png" alt="image-20230707154011354" /></p>
+<p>6.接下来就可以访问grafana查看了</p>
+<h4 id="grafana界面配置"><a class="markdownIt-Anchor" href="#grafana界面配置"></a> grafana界面配置</h4>
+<p>1.打开grafana访问路径,此文档部署grafana路径是192.168.2.50:3100</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">网页打开 http://192.168.2.50:3100</span><br><span class="line">初始化账户和密码为:admin admin</span><br><span class="line">登录之后会跳出修改密码界面，点击【spik】可以跳过</span><br></pre></td></tr></table></figure>
+<p>2.添加loki</p>
+<p><img src="/imgs/image-20230707155839036.png" alt="image-20230707155839036" /></p>
+<p><img src="/imgs/image-20230707160032533.png" alt="image-20230707160032533" /></p>
+<p><img src="/imgs/image-20230707160046360.png" alt="image-20230707160046360" /></p>
+<p><img src="/imgs/image-20230707160144473.png" alt="image-20230707160144473" /></p>
+<p>然后拉到下面，点击【Save &amp; Test】，即添加成功</p>
+<p>3.使用loki</p>
+<p><img src="/imgs/image-20230707160249769.png" alt="image-20230707160249769" /></p>
+<p><img src="/imgs/image-20230707160316228.png" alt="image-20230707160316228" /></p>
+<p>可以看到有我们刚才配置的Job_name，点击【tts-svc-dev】</p>
+<p><img src="/imgs/image-20230707160353065.png" alt="image-20230707160353065" /></p>
+<p>成功查看日志</p>
+<p>4.操作日志</p>
+<p>可以点击【Add query】，输入需要查询的，查出指定日志。查询方式可百度</p>
+
+      
+    </div>
+    <div class="article-footer">
+      <blockquote class="mt-2x">
+  <ul class="post-copyright list-unstyled">
+    
+    <li class="post-copyright-link hidden-xs">
+      <strong>本文链接：</strong>
+      <a href="https://www.yanwq.com/2024/03/20/docker%20%E9%83%A8%E7%BD%B2loki+promtail/" title="docker部署loki+promtail" target="_blank" rel="external">https://www.yanwq.com/2024/03/20/docker 部署loki+promtail/</a>
+    </li>
+    
+    <li class="post-copyright-license">
+      <strong>版权声明： </strong> 本博客所有文章除特别声明外，均采用 <a href="http://creativecommons.org/licenses/by/4.0/deed.zh" target="_blank" rel="external">CC BY 4.0 CN协议</a> 许可协议。转载请注明出处！
+    </li>
+  </ul>
+</blockquote>
+
+
+<div class="panel panel-default panel-badger">
+  <div class="panel-body">
+    <figure class="media">
+      <div class="media-left">
+        <a href="https://github.com/ywq0811" target="_blank" class="img-burn thumb-sm visible-lg">
+          <img src="/images/avatar.jpg" class="img-rounded w-full" alt="">
+        </a>
+      </div>
+      <div class="media-body">
+        <h3 class="media-heading"><a href="https://github.com/ywq0811" target="_blank"><span class="text-dark">yanwq</span><small class="ml-1x">Go Developer</small></a></h3>
+        <div>个人简介。</div>
+      </div>
+    </figure>
+  </div>
+</div>
+
+
+    </div>
+  </article>
+  
+    
+  <section id="comments">
+  	
+
+    
+  </section>
+
+
+  
+</div>
+
+  <nav class="bar bar-footer clearfix" data-stick-bottom>
+  <div class="bar-inner">
+  
+  <ul class="pager pull-left">
+    
+    <li class="prev">
+      <a href="/2024/03/20/docker%E9%83%A8%E7%BD%B2grafana/" title="docker 部署grafana"><i class="icon icon-angle-left" aria-hidden="true"></i><span>&nbsp;&nbsp;上一篇</span></a>
+    </li>
+    
+    
+    <li class="next">
+      <a href="/2024/03/20/docker%E6%93%8D%E4%BD%9Coracle%E5%AF%BC%E5%85%A5%E5%AF%BC%E6%B5%81%E7%A8%8B/" title="docker 操作oracle数据库文档"><span>下一篇&nbsp;&nbsp;</span><i class="icon icon-angle-right" aria-hidden="true"></i></a>
+    </li>
+    
+    
+    <li class="toggle-toc">
+      <a class="toggle-btn " data-toggle="collapse" href="#collapseToc" aria-expanded="false" title="文章目录" role="button">    <span>[&nbsp;</span><span>文章目录</span>
+        <i class="text-collapsed icon icon-anchor"></i>
+        <i class="text-in icon icon-close"></i>
+        <span>]</span>
+      </a>
+    </li>
+    
+  </ul>
+  
+  
+  
+  <div class="bar-right">
+    
+  </div>
+  </div>
+</nav>
+  
+
+
+</main>
+
+  <footer class="footer" itemscope itemtype="http://schema.org/WPFooter">
+	
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/ywq0811" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+    </ul>
+
+    <div class="copyright">
+    	
+        <div class="publishby">
+        	Theme by <a href="https://github.com/cofess" target="_blank"> cofess </a>base on <a href="https://github.com/cofess/hexo-theme-pure" target="_blank">pure</a>.
+        </div>
+    </div>
+</footer>
+  <script src="//cdn.jsdelivr.net/npm/jquery@1.12.4/dist/jquery.min.js"></script>
+<script>
+window.jQuery || document.write('<script src="js/jquery.min.js"><\/script>')
+</script>
+
+<script src="/js/plugin.min.js"></script>
+
+
+<script src="/js/application.js"></script>
+
+
+    <script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(未命名)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+
+<script src="/js/insight.js"></script>
+
+
+
+
+
+
+   
+
+
+
+
+   
+    
+<script src="//cdn.jsdelivr.net/npm/gitment@0.0.3/dist/gitment.browser.min.js"></script>
+<script>
+var gitment = new Gitment({
+  // id默认为当前页面url，如果url后带参数或锚点，gitment要重新初始化
+  // https://github.com/imsun/gitment/issues/55
+  // 解决方案：id:window.location.pathname,或者将id设置为当前页面标题
+  id: 'docker部署loki+promtail', 
+  owner: '', // 可以是你的GitHub用户名，也可以是github id
+  repo: '',
+  oauth: {
+    client_id: '',
+    client_secret: '',
+  }
+})
+gitment.render('comments')
+</script>
+
+
+
+
+
+
+
+
+
+</body>
+</html>

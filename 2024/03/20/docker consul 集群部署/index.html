@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+  <meta charset="utf-8">
+  
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="Cache-Control" content="no-transform" />
+  <meta http-equiv="Cache-Control" content="no-siteapp" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="format-detection" content="telephone=no,email=no,adress=no">
+  <!-- Color theme for statusbar -->
+  <meta name="theme-color" content="#000000" />
+  <!-- 强制页面在当前窗口以独立页面显示,防止别人在框架里调用页面 -->
+  <meta http-equiv="window-target" content="_top" />
+  
+  
+  <title>docker consul 集群部署 | yanwq</title>
+  <meta name="description" content="docker consul 集群部署 本文档演示的在一台服务器上部署节点&#x3D;3的consul集群  准备 1.在宿主机上分别建立目录 server1 、server2 、server3 文件夹，并对应创建config 、data 、log 文件夹 其中：  config ：配置文件路径。也是docker启动时读取的配置文件路径 data ：数据存储路径。docker启动时挂载到容器中的指定路径 l">
+<meta property="og:type" content="article">
+<meta property="og:title" content="docker consul 集群部署">
+<meta property="og:url" content="https://www.yanwq.com/2024/03/20/docker%20consul%20%E9%9B%86%E7%BE%A4%E9%83%A8%E7%BD%B2/index.html">
+<meta property="og:site_name" content="yanwq">
+<meta property="og:description" content="docker consul 集群部署 本文档演示的在一台服务器上部署节点&#x3D;3的consul集群  准备 1.在宿主机上分别建立目录 server1 、server2 、server3 文件夹，并对应创建config 、data 、log 文件夹 其中：  config ：配置文件路径。也是docker启动时读取的配置文件路径 data ：数据存储路径。docker启动时挂载到容器中的指定路径 l">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://www.yanwq.com/2024/03/20/docker%20consul%20%E9%9B%86%E7%BE%A4%E9%83%A8%E7%BD%B2/images/1.png">
+<meta property="og:image" content="https://www.yanwq.com/imgs/2.png">
+<meta property="og:image" content="https://www.yanwq.com/imgs/image-20240226172420932.png">
+<meta property="og:image" content="https://www.yanwq.com/imgs/image-20240226161814054.png">
+<meta property="og:image" content="https://www.yanwq.com/imgs/image-20240226172625032.png">
+<meta property="og:image" content="https://www.yanwq.com/imgs/image-20240226174005313.png">
+<meta property="og:image" content="https://www.yanwq.com/imgs/image-20240226174126814.png">
+<meta property="og:image" content="https://www.yanwq.com/imgs/image-20240226174320743.png">
+<meta property="og:image" content="https://www.yanwq.com/imgs/2.png">
+<meta property="og:image" content="https://www.yanwq.com/imgs/image-20240226161334661.png">
+<meta property="og:image" content="https://www.yanwq.com/imgs/image-20240226161814054.png">
+<meta property="og:image" content="https://www.yanwq.com/imgs/4.png">
+<meta property="og:image" content="https://www.yanwq.com/imgs/image-20240226161334661.png">
+<meta property="og:image" content="https://www.yanwq.com/imgs/image-20240227174226118.png">
+<meta property="og:image" content="https://www.yanwq.com/imgs/4.png">
+<meta property="og:image" content="https://www.yanwq.com/imgs/image-20240227174405828.png">
+<meta property="og:image" content="https://www.yanwq.com/imgs/image-20240227174802437.png">
+<meta property="og:image" content="https://www.yanwq.com/imgs/image-20240227174946704.png">
+<meta property="og:image" content="https://www.yanwq.com/imgs/image-20240229141458532.png">
+<meta property="og:image" content="https://www.yanwq.com/imgs/image-20240229143001728.png">
+<meta property="og:image" content="https://www.yanwq.com/imgs/image-20240229144313793.png">
+<meta property="og:image" content="https://www.yanwq.com/imgs/image-20240229161256697.png">
+<meta property="og:image" content="https://www.yanwq.com/imgs/image-20240229161313672.png">
+<meta property="og:image" content="https://www.yanwq.com/imgs/image-20240229161433696.png">
+<meta property="article:published_time" content="2024-03-20T06:48:44.857Z">
+<meta property="article:modified_time" content="2024-03-20T07:08:23.397Z">
+<meta property="article:author" content="yanwq">
+<meta property="article:tag" content="consul">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://www.yanwq.com/2024/03/20/docker%20consul%20%E9%9B%86%E7%BE%A4%E9%83%A8%E7%BD%B2/images/1.png">
+  <!-- Canonical links -->
+  <link rel="canonical" href="https://www.yanwq.com/2024/03/20/docker%20consul%20%E9%9B%86%E7%BE%A4%E9%83%A8%E7%BD%B2/index.html">
+  
+    <link rel="alternate" href="/atom.xml" title="yanwq" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+  
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitment@0.0.3/style/default.min.css">
+  
+  
+  
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?b839d137c29d9b42d962e7accfbb17ce";
+  var s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body class="main-center theme-black" itemscope itemtype="http://schema.org/WebPage">
+  <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+  <div class="slimContent">
+    <div class="navbar-header">
+      
+      
+      <div class="profile-block text-center">
+        <a id="avatar" href="https://github.com/ywq0811" target="_blank">
+          <img class="img-circle img-rotate" src="/images/avatar.jpg" width="200" height="200">
+        </a>
+        <h2 id="name" class="hidden-xs hidden-sm">yanwq</h2>
+        <h3 id="title" class="hidden-xs hidden-sm hidden-md">Go Developer</h3>
+        <small id="location" class="text-muted hidden-xs hidden-sm"><i class="icon icon-map-marker"></i> Xiamen, China</small>
+      </div>
+      
+      <div class="search" id="search-form-wrap">
+
+    <form class="search-form sidebar-form">
+        <div class="input-group">
+            <input type="text" class="search-form-input form-control" placeholder="搜索" />
+            <span class="input-group-btn">
+                <button type="submit" class="search-form-submit btn btn-flat" onclick="return false;"><i class="icon icon-search"></i></button>
+            </span>
+        </div>
+    </form>
+    <div class="ins-search">
+  <div class="ins-search-mask"></div>
+  <div class="ins-search-container">
+    <div class="ins-input-wrapper">
+      <input type="text" class="ins-search-input" placeholder="想要查找什么..." x-webkit-speech />
+      <button type="button" class="close ins-close ins-selectable" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+    </div>
+    <div class="ins-section-wrapper">
+      <div class="ins-section-container"></div>
+    </div>
+  </div>
+</div>
+
+
+</div>
+      <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#main-navbar" aria-controls="main-navbar" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <nav id="main-navbar" class="collapse navbar-collapse" itemscope itemtype="http://schema.org/SiteNavigationElement" role="navigation">
+      <ul class="nav navbar-nav main-nav ">
+        
+        
+        <li class="menu-item menu-item-home">
+          <a href="/.">
+            
+            <i class="icon icon-home-fill"></i>
+            
+            <span class="menu-title">首页</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives">
+            
+            <i class="icon icon-archives-fill"></i>
+            
+            <span class="menu-title">归档</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories">
+            
+            <i class="icon icon-folder"></i>
+            
+            <span class="menu-title">分类</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags">
+            
+            <i class="icon icon-tags"></i>
+            
+            <span class="menu-title">标签</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-repository">
+          <a href="/repository">
+            
+            <i class="icon icon-project"></i>
+            
+            <span class="menu-title">项目</span>
+          </a>
+        </li>
+        
+      </ul>
+      
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/ywq0811" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+    </ul>
+
+    </nav>
+  </div>
+</header>
+
+  
+    <aside class="sidebar" itemscope itemtype="http://schema.org/WPSideBar">
+  <div class="slimContent">
+    
+      <div class="widget">
+    <h3 class="widget-title">公告</h3>
+    <div class="widget-body">
+        <div id="board">
+            <div class="content">
+                <p>欢迎交流与分享经验!</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">分类</h3>
+    <div class="widget-body">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/DB/">DB</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Docker/">Docker</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Go/">Go</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Proto/">Proto</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Ubuntu/">Ubuntu</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Windows/">Windows</a><span class="category-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget-body">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/consul/" rel="tag">consul</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cron/" rel="tag">cron</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/db/" rel="tag">db</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/" rel="tag">docker</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/es/" rel="tag">es</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/go/" rel="tag">go</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/go-zero/" rel="tag">go-zero</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/grafana/" rel="tag">grafana</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/https/" rel="tag">https</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/" rel="tag">mysql</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/oracle/" rel="tag">oracle</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/proto/" rel="tag">proto</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ubuntu/" rel="tag">ubuntu</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/wsl2/" rel="tag">wsl2</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签云</h3>
+    <div class="widget-body tagcloud">
+      <a href="/tags/consul/" style="font-size: 14px;">consul</a> <a href="/tags/cron/" style="font-size: 13px;">cron</a> <a href="/tags/db/" style="font-size: 13px;">db</a> <a href="/tags/docker/" style="font-size: 13px;">docker</a> <a href="/tags/es/" style="font-size: 13px;">es</a> <a href="/tags/go/" style="font-size: 13px;">go</a> <a href="/tags/go-zero/" style="font-size: 13px;">go-zero</a> <a href="/tags/grafana/" style="font-size: 14px;">grafana</a> <a href="/tags/https/" style="font-size: 13px;">https</a> <a href="/tags/mysql/" style="font-size: 13px;">mysql</a> <a href="/tags/oracle/" style="font-size: 13px;">oracle</a> <a href="/tags/proto/" style="font-size: 13px;">proto</a> <a href="/tags/ubuntu/" style="font-size: 13px;">ubuntu</a> <a href="/tags/wsl2/" style="font-size: 13px;">wsl2</a>
+    </div>
+  </div>
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget-body">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/03/">三月 2024</a><span class="archive-list-count">15</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget-body">
+      <ul class="recent-post-list list-unstyled no-thumbnail">
+        
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/Go/">Go</a>
+              </p>
+              <p class="item-title">
+                <a href="/2024/03/20/order%E6%89%93%E5%8C%85/" class="title">go-zero 生成和打包api和rpc</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2024-03-20T06:50:10.519Z" itemprop="datePublished">2024-03-20</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/Ubuntu/">Ubuntu</a>
+              </p>
+              <p class="item-title">
+                <a href="/2024/03/20/wsl2-ubuntu%E8%A3%85go/" class="title">wsl2-Ubuntu 安装 go</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2024-03-20T06:49:47.684Z" itemprop="datePublished">2024-03-20</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/Docker/">Docker</a>
+              </p>
+              <p class="item-title">
+                <a href="/2024/03/20/docker%E9%83%A8%E7%BD%B2mysql5.7%E6%96%87%E6%A1%A3/" class="title">docker 部署mysql</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2024-03-20T06:49:21.020Z" itemprop="datePublished">2024-03-20</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/Docker/">Docker</a>
+              </p>
+              <p class="item-title">
+                <a href="/2024/03/20/docker%E9%83%A8%E7%BD%B2es%E6%95%B0%E6%8D%AE%E5%BA%93/" class="title">docker部署es数据库</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2024-03-20T06:48:51.457Z" itemprop="datePublished">2024-03-20</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/Docker/">Docker</a>
+              </p>
+              <p class="item-title">
+                <a href="/2024/03/20/docker%20consul%20%E9%9B%86%E7%BE%A4%E9%83%A8%E7%BD%B2%E9%AA%8C%E8%AF%81/" class="title">docker consul 集群部署验证</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2024-03-20T06:48:46.201Z" itemprop="datePublished">2024-03-20</time>
+              </p>
+            </div>
+          </li>
+          
+      </ul>
+    </div>
+  </div>
+  
+
+    
+  </div>
+</aside>
+
+  
+  
+  <aside class="sidebar sidebar-toc collapse   in  " id="collapseToc" itemscope itemtype="http://schema.org/WPSideBar">
+  <div class="slimContent">
+    <nav id="toc" class="article-toc">
+      <h3 class="toc-title">文章目录</h3>
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#docker-consul-%E9%9B%86%E7%BE%A4%E9%83%A8%E7%BD%B2"><span class="toc-number">1.</span> <span class="toc-text"> docker consul 集群部署</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%87%86%E5%A4%87"><span class="toc-number">1.1.</span> <span class="toc-text"> 准备</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8D%95%E7%82%B9%E9%83%A8%E7%BD%B2"><span class="toc-number">1.2.</span> <span class="toc-text"> 单点部署</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#server1"><span class="toc-number">1.2.0.1.</span> <span class="toc-text"> server1</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%8A%A0%E5%85%A5acl%E8%AE%A4%E8%AF%81"><span class="toc-number">1.2.0.2.</span> <span class="toc-text"> 加入ACL认证</span></a></li></ol></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%9B%86%E7%BE%A4%E9%83%A8%E7%BD%B2"><span class="toc-number">1.3.</span> <span class="toc-text"> 集群部署</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%B8%80%E5%8F%B0%E6%9C%8D%E5%8A%A1%E5%99%A8%E9%83%A8%E7%BD%B2"><span class="toc-number">1.3.1.</span> <span class="toc-text"> 一台服务器部署</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#server1-2"><span class="toc-number">1.3.1.1.</span> <span class="toc-text"> server1</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#server2"><span class="toc-number">1.3.1.2.</span> <span class="toc-text"> server2</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#server3"><span class="toc-number">1.3.1.3.</span> <span class="toc-text"> server3</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%8A%A0%E5%85%A5acl%E8%AE%A4%E8%AF%81-2"><span class="toc-number">1.3.1.4.</span> <span class="toc-text"> 加入ACL认证</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%A4%9A%E5%8F%B0%E6%9C%8D%E5%8A%A1%E5%99%A8%E9%83%A8%E7%BD%B2"><span class="toc-number">1.3.2.</span> <span class="toc-text"> 多台服务器部署</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#server1-3"><span class="toc-number">1.3.2.1.</span> <span class="toc-text"> server1</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#server2-2"><span class="toc-number">1.3.2.2.</span> <span class="toc-text"> server2</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#server3-2"><span class="toc-number">1.3.2.3.</span> <span class="toc-text"> server3</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E8%8A%82%E7%82%B9%E8%87%AA%E5%8A%A8%E5%8A%A0%E5%85%A5%E9%9B%86%E7%BE%A4"><span class="toc-number">1.3.2.4.</span> <span class="toc-text"> 节点自动加入集群</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%8A%A0%E5%85%A5acl%E8%AE%A4%E8%AF%81-3"><span class="toc-number">1.3.2.5.</span> <span class="toc-text"> 加入ACL认证</span></a></li></ol></li></ol></li></ol></li></ol>
+    </nav>
+  </div>
+</aside>
+
+<main class="main" role="main">
+  <div class="content">
+  <article id="post-docker consul 集群部署" class="article article-type-post" itemscope itemtype="http://schema.org/BlogPosting">
+    
+    <div class="article-header">
+      
+        
+  
+    <h1 class="article-title" itemprop="name">
+      docker consul 集群部署
+    </h1>
+  
+
+      
+      <div class="article-meta">
+        <span class="article-date">
+    <i class="icon icon-calendar-check"></i>
+	<a href="/2024/03/20/docker%20consul%20%E9%9B%86%E7%BE%A4%E9%83%A8%E7%BD%B2/" class="article-date">
+	  <time datetime="2024-03-20T06:48:44.857Z" itemprop="datePublished">2024-03-20</time>
+	</a>
+</span>
+        
+  <span class="article-category">
+    <i class="icon icon-folder"></i>
+    <a class="article-category-link" href="/categories/Docker/">Docker</a>
+  </span>
+
+        
+  <span class="article-tag">
+    <i class="icon icon-tags"></i>
+	<a class="article-tag-link-link" href="/tags/consul/" rel="tag">consul</a>
+  </span>
+
+
+        
+
+        <span class="post-comment"><i class="icon icon-comment"></i> <a href="/2024/03/20/docker%20consul%20%E9%9B%86%E7%BE%A4%E9%83%A8%E7%BD%B2/#comments" class="article-comment-link">评论</a></span>
+        
+	
+		<span class="post-wordcount hidden-xs" itemprop="wordCount">字数统计: 3.3k(字)</span>
+	
+	
+		<span class="post-readcount hidden-xs" itemprop="timeRequired">阅读时长: 15(分)</span>
+	
+
+      </div>
+    </div>
+    <div class="article-entry marked-body" itemprop="articleBody">
+      
+        <h2 id="docker-consul-集群部署"><a class="markdownIt-Anchor" href="#docker-consul-集群部署"></a> docker consul 集群部署</h2>
+<p>本文档演示的在一台服务器上部署节点=3的consul集群</p>
+<h3 id="准备"><a class="markdownIt-Anchor" href="#准备"></a> 准备</h3>
+<p>1.在宿主机上分别建立目录 <code>server1</code> 、<code>server2</code> 、<code>server3</code> 文件夹，并对应创建<code>config</code> 、<code>data</code> 、<code>log</code> 文件夹</p>
+<p>其中：</p>
+<ul>
+<li><code>config</code> ：配置文件路径。也是docker启动时读取的配置文件路径</li>
+<li><code>data</code> ：数据存储路径。docker启动时挂载到容器中的指定路径</li>
+<li><code>log</code> ：日志输出路径。（可以不落盘日志，本文档演示的是落盘日志）</li>
+</ul>
+<p><img src="./images/1.png" alt="image-20240226144216083" /></p>
+<hr />
+<h3 id="单点部署"><a class="markdownIt-Anchor" href="#单点部署"></a> 单点部署</h3>
+<h5 id="server1"><a class="markdownIt-Anchor" href="#server1"></a> server1</h5>
+<p>1.进入到 <code>config</code> 目录下</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cd server1/config</span><br></pre></td></tr></table></figure>
+<p>2.创建 <code>config.json</code> 配置文件</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vim config.json</span><br></pre></td></tr></table></figure>
+<p><img src="/imgs/2.png" alt="image-20240226151703284" /></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    &quot;datacenter&quot;: &quot;dc1&quot;,</span><br><span class="line">    &quot;bootstrap_expect&quot;: 1,</span><br><span class="line">    &quot;data_dir&quot;: &quot;/consul/data&quot;,</span><br><span class="line">    &quot;log_file&quot;: &quot;/consul/log/&quot;,</span><br><span class="line">    &quot;log_level&quot;: &quot;INFO&quot;,	</span><br><span class="line">    &quot;node_name&quot;: &quot;consul_server_1&quot;,</span><br><span class="line">    &quot;client_addr&quot;: &quot;0.0.0.0&quot;,</span><br><span class="line">    &quot;server&quot;: true,</span><br><span class="line">    &quot;ui&quot;: true,</span><br><span class="line">    &quot;enable_script_checks&quot;: true,</span><br><span class="line">    &quot;addresses&quot;: &#123;</span><br><span class="line">        &quot;https&quot;: &quot;0.0.0.0&quot;,</span><br><span class="line">        &quot;dns&quot;: &quot;0.0.0.0&quot;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>参数说明：</p>
+<ul>
+<li><code>datacenter</code>：指定consul的数据中心名称</li>
+<li><code>bootstrap_expect</code>：指定启动时需要的最少节点数</li>
+<li><code>data_dir</code>：指定consul在运行过程中存储数据的目录路径（容器内路径）</li>
+<li><code>log_file</code>：指定consul输出的日志路径（容器内路径）</li>
+<li><code>log_level</code>：指定consul日志输出的等级</li>
+<li><code>node_name</code>：指定consul的节点名称</li>
+<li><code>client_addr</code>：指定consul客户端访问地址</li>
+<li><code>server</code>：指定是否是server节点</li>
+<li><code>ui</code>：指定是否启用consul的web管理界面</li>
+<li><code>enable_script_checks</code>：指定是否启用支持脚本检查（Script Checks）功能。脚本检查允许用户通过自定义的脚本来检查服务的健康状态。</li>
+<li><code>addresses</code>：指定Consul agent监听的IP地址</li>
+</ul>
+<p><img src="/imgs/image-20240226172420932.png" alt="image-20240226172420932" /></p>
+<p><code>log_file</code>： 应该是 “/consul/log/”</p>
+<p>3.配置启动命令</p>
+<p>在<code>server1</code> 目录下 创建启动脚本<code>run.sh</code></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mkdir run.sh</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">!/bin/bash</span></span><br><span class="line"></span><br><span class="line">docker run -d -p 8500:8500 --name=consul_server_1 -v $PWD/data:/consul/data -v $PWD/config:/consul/config -v $PWD/log:/consul/log -e CONSUL_BIND_INTERFACE=&#x27;eth0&#x27; consul agent -config-dir=/consul/config/config.json</span><br></pre></td></tr></table></figure>
+<p>参数说明</p>
+<ul>
+<li>
+<p><code>-d</code>：在后台运行容器。</p>
+</li>
+<li>
+<p><code>-p 8500:8500</code>：指定容器内端口和宿主机端口的映射关系，将容器内的8500端口映射到宿主机的8500端口上。</p>
+</li>
+<li>
+<p><code>--name=consul_server_1</code> ：指定容器名称为consul_server_1。</p>
+</li>
+<li>
+<p><code>-v $PWD/data:/consul/data</code>：挂载宿主机上的数据存储目录到容器中的<code>/consul/data</code> 目录</p>
+</li>
+<li>
+<p><code>-v $PWD/config:/consul/config</code>：挂载宿主机上的配置文件目录到容器中的<code>/consul/config</code> 目录</p>
+</li>
+<li>
+<p><code>-v $PWD/log:/consul/log</code>：挂载宿主机上的日志输出目录到容器中的<code>/consul/log</code> 目录</p>
+</li>
+<li>
+<p><code>-e CONSUL_BIND_INTERFACE='eth0'</code>：通过环境变量<code>CONSUL_BIND_INTERFACE</code>指定Consul绑定的网卡接口为eth0</p>
+</li>
+<li>
+<p><code>consul agent</code> ：启动consul agent</p>
+</li>
+<li>
+<p><code>-config-dir=/consul/config/config.json</code>：指定配置文件路径（容器内），consul会自动读取配置文件中的参数</p>
+</li>
+</ul>
+<p><img src="/imgs/image-20240226161814054.png" alt="image-20240226161814054" /></p>
+<p>4.启动服务</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sh run.sh</span><br></pre></td></tr></table></figure>
+<p><img src="/imgs/image-20240226172625032.png" alt="image-20240226172625032" /></p>
+<p>5.通过网页打开<a target="_blank" rel="noopener" href="http://127.0.0.1:8500/ui%E7%9C%8B%E6%98%AF%E5%90%A6%E8%83%BD%E7%9C%8B%E5%88%B0consul%E7%9C%8B%E6%9D%BF">http://127.0.0.1:8500/ui看是否能看到consul看板</a></p>
+<h5 id="加入acl认证"><a class="markdownIt-Anchor" href="#加入acl认证"></a> 加入ACL认证</h5>
+<p>1.使用linux的命令生成一个64位的UUID作为master token</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">uuidgen</span><br><span class="line"></span><br><span class="line">output:</span><br><span class="line">487d910a-a599-49b5-979e-57855e53b3b0</span><br></pre></td></tr></table></figure>
+<p><img src="/imgs/image-20240226174005313.png" alt="image-20240226174005313" /></p>
+<p>2.编写acl.hcl文件</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vim config/acl.hcl</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">acl &#123;</span><br><span class="line">  enabled = true</span><br><span class="line">  default_policy = &quot;deny&quot;</span><br><span class="line">  enable_token_persistence = true</span><br><span class="line">  tokens &#123;</span><br><span class="line">    master = &quot;487d910a-a599-49b5-979e-57855e53b3b0&quot;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="/imgs/image-20240226174126814.png" alt="image-20240226174126814" /></p>
+<p>3.重启服务</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker restart consul_server_1</span><br></pre></td></tr></table></figure>
+<p>4.访问UI，提示需要输入token，输入上面配置的master token即可</p>
+<p><img src="/imgs/image-20240226174320743.png" alt="image-20240226174320743" /></p>
+<hr />
+<h3 id="集群部署"><a class="markdownIt-Anchor" href="#集群部署"></a> 集群部署</h3>
+<h4 id="一台服务器部署"><a class="markdownIt-Anchor" href="#一台服务器部署"></a> 一台服务器部署</h4>
+<p>在一台服务器上部署consul集群，docker run命令可以使用-p 和 -e CONSUL_BIND_INTERFACE=‘eth0’ 的方式。因为在同一台服务器上，容器网卡是eth0。</p>
+<h5 id="server1-2"><a class="markdownIt-Anchor" href="#server1-2"></a> server1</h5>
+<p>1.进入到 <code>config</code> 目录下</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cd server1/config</span><br></pre></td></tr></table></figure>
+<p>2.创建 <code>config.json</code> 配置文件</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vim config.json</span><br></pre></td></tr></table></figure>
+<p><img src="/imgs/2.png" alt="image-20240226151703284" /></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    &quot;datacenter&quot;: &quot;dc1&quot;,</span><br><span class="line">    &quot;bootstrap_expect&quot;: 3,</span><br><span class="line">    &quot;data_dir&quot;: &quot;/consul/data&quot;,</span><br><span class="line">    &quot;log_file&quot;: &quot;/consul/log/&quot;,</span><br><span class="line">    &quot;log_level&quot;: &quot;INFO&quot;,	</span><br><span class="line">    &quot;node_name&quot;: &quot;consul_server_1&quot;,</span><br><span class="line">    &quot;client_addr&quot;: &quot;0.0.0.0&quot;,</span><br><span class="line">    &quot;server&quot;: true,</span><br><span class="line">    &quot;ui&quot;: true,</span><br><span class="line">    &quot;enable_script_checks&quot;: true,</span><br><span class="line">    &quot;addresses&quot;: &#123;</span><br><span class="line">        &quot;https&quot;: &quot;0.0.0.0&quot;,</span><br><span class="line">        &quot;dns&quot;: &quot;0.0.0.0&quot;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>参数说明：</p>
+<ul>
+<li><code>datacenter</code>：指定consul的数据中心名称</li>
+<li><code>bootstrap_expect</code>：指定启动时需要的最少节点数</li>
+<li><code>data_dir</code>：指定consul在运行过程中存储数据的目录路径（容器内路径）</li>
+<li><code>log_file</code>：指定consul输出的日志路径（容器内路径）</li>
+<li><code>log_level</code>：指定consul日志输出的等级</li>
+<li><code>node_name</code>：指定consul的节点名称</li>
+<li><code>client_addr</code>：指定consul客户端访问地址</li>
+<li><code>server</code>：指定是否是server节点</li>
+<li><code>ui</code>：指定是否启用consul的web管理界面</li>
+<li><code>enable_script_checks</code>：指定是否启用支持脚本检查（Script Checks）功能。脚本检查允许用户通过自定义的脚本来检查服务的健康状态。</li>
+<li><code>addresses</code>：指定Consul agent监听的IP地址</li>
+</ul>
+<p><img src="/imgs/image-20240226161334661.png" alt="image-20240226161334661" /></p>
+<p><code>log_file</code>： 应该是 “/consul/log/”</p>
+<p>3.配置启动命令</p>
+<p>在<code>server1</code> 目录下 创建启动脚本<code>run.sh</code></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mkdir run.sh</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">!/bin/bash</span></span><br><span class="line"></span><br><span class="line">docker run -d -p 8500:8500 --name=consul_server_1 -v $PWD/data:/consul/data -v $PWD/config:/consul/config -v $PWD/log:/consul/log -e CONSUL_BIND_INTERFACE=&#x27;eth0&#x27; consul agent -config-dir=/consul/config/config.json</span><br></pre></td></tr></table></figure>
+<p>参数说明</p>
+<ul>
+<li>
+<p><code>-d</code>：在后台运行容器。</p>
+</li>
+<li>
+<p><code>-p 8500:8500</code>：指定容器内端口和宿主机端口的映射关系，将容器内的8500端口映射到宿主机的8500端口上。</p>
+</li>
+<li>
+<p><code>--name=consul_server_1</code> ：指定容器名称为consul_server_1。</p>
+</li>
+<li>
+<p><code>-v $PWD/data:/consul/data</code>：挂载宿主机上的数据存储目录到容器中的<code>/consul/data</code> 目录</p>
+</li>
+<li>
+<p><code>-v $PWD/config:/consul/config</code>：挂载宿主机上的配置文件目录到容器中的<code>/consul/config</code> 目录</p>
+</li>
+<li>
+<p><code>-v $PWD/log:/consul/log</code>：挂载宿主机上的日志输出目录到容器中的<code>/consul/log</code> 目录</p>
+</li>
+<li>
+<p><code>-e CONSUL_BIND_INTERFACE='eth0'</code>：通过环境变量<code>CONSUL_BIND_INTERFACE</code>指定Consul绑定的网卡接口为eth0</p>
+</li>
+<li>
+<p><code>consul agent</code> ：启动consul agent</p>
+</li>
+<li>
+<p><code>-config-dir=/consul/config/config.json</code>：指定配置文件路径（容器内），consul会自动读取配置文件中的参数</p>
+</li>
+</ul>
+<p><img src="/imgs/image-20240226161814054.png" alt="image-20240226161814054" /></p>
+<p>4.启动服务</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sh run.sh</span><br></pre></td></tr></table></figure>
+<p>启动后，因为配置了bootstrap_expect=3，但只启动了一个server，所以会报错：没有集群领导者</p>
+<p><img src="/imgs/4.png" alt="4" /></p>
+<p>需要把另外2个服务也启动起来！</p>
+<h5 id="server2"><a class="markdownIt-Anchor" href="#server2"></a> server2</h5>
+<p>1.进入到 <code>config</code> 目录下</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cd server2/config</span><br></pre></td></tr></table></figure>
+<p>2.创建 <code>config.json</code> 配置文件</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vim config.json</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    &quot;datacenter&quot;: &quot;dc1&quot;,</span><br><span class="line">    &quot;bootstrap_expect&quot;: 3,</span><br><span class="line">    &quot;data_dir&quot;: &quot;/consul/data&quot;,</span><br><span class="line">    &quot;log_file&quot;: &quot;/consul/log/&quot;,</span><br><span class="line">    &quot;log_level&quot;: &quot;INFO&quot;,	</span><br><span class="line">    &quot;node_name&quot;: &quot;consul_server_2&quot;,</span><br><span class="line">    &quot;client_addr&quot;: &quot;0.0.0.0&quot;,</span><br><span class="line">    &quot;server&quot;: true,</span><br><span class="line">    &quot;ui&quot;: true,</span><br><span class="line">    &quot;enable_script_checks&quot;: true,</span><br><span class="line">    &quot;addresses&quot;: &#123;</span><br><span class="line">        &quot;https&quot;: &quot;0.0.0.0&quot;,</span><br><span class="line">        &quot;dns&quot;: &quot;0.0.0.0&quot;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>3.配置启动令</p>
+<p>在<code>server2</code> 目录下 创建启动脚本<code>run.sh</code></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mkdir run.sh</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">!/bin/bash</span></span><br><span class="line"></span><br><span class="line">docker run -d -p 8510:8500 --name=consul_server_2 -v $PWD/data:/consul/data -v $PWD/config:/consul/config -v $PWD/log:/consul/log -e CONSUL_BIND_INTERFACE=&#x27;eth0&#x27; consul agent -config-dir=/consul/config/config.json</span><br></pre></td></tr></table></figure>
+<p>4.启动服务</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sh run.sh</span><br></pre></td></tr></table></figure>
+<p>5.加入集群</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker exec -it consul_server_3 consul join &#123;consul_server_1.IP&#125;</span><br></pre></td></tr></table></figure>
+<h5 id="server3"><a class="markdownIt-Anchor" href="#server3"></a> server3</h5>
+<p>1.进入到 <code>config</code> 目录下</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cd server3/config</span><br></pre></td></tr></table></figure>
+<p>2.创建 <code>config.json</code> 配置文件</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vim config.json</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    &quot;datacenter&quot;: &quot;dc1&quot;,</span><br><span class="line">    &quot;bootstrap_expect&quot;: 3,</span><br><span class="line">    &quot;data_dir&quot;: &quot;/consul/data&quot;,</span><br><span class="line">    &quot;log_file&quot;: &quot;/consul/log/&quot;,</span><br><span class="line">    &quot;log_level&quot;: &quot;INFO&quot;,	</span><br><span class="line">    &quot;node_name&quot;: &quot;consul_server_3&quot;,</span><br><span class="line">    &quot;client_addr&quot;: &quot;0.0.0.0&quot;,</span><br><span class="line">    &quot;server&quot;: true,</span><br><span class="line">    &quot;ui&quot;: true,</span><br><span class="line">    &quot;enable_script_checks&quot;: true,</span><br><span class="line">    &quot;addresses&quot;: &#123;</span><br><span class="line">        &quot;https&quot;: &quot;0.0.0.0&quot;,</span><br><span class="line">        &quot;dns&quot;: &quot;0.0.0.0&quot;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>3.配置启动命令</p>
+<p>在<code>server3</code> 目录下 创建启动脚本<code>run.sh</code></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mkdir run.sh</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">!/bin/bash</span></span><br><span class="line"></span><br><span class="line">docker run -d -p 8520:8500 --name=consul_server_3 -v $PWD/data:/consul/data -v $PWD/config:/consul/config -v $PWD/log:/consul/log -e CONSUL_BIND_INTERFACE=&#x27;eth0&#x27; consul agent -config-dir=/consul/config/config.json</span><br></pre></td></tr></table></figure>
+<p>4.启动服务</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sh run.sh</span><br></pre></td></tr></table></figure>
+<p>5.加入集群</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker exec -it consul_server_3 consul join &#123;consul_server_1.IP&#125;</span><br></pre></td></tr></table></figure>
+<h5 id="加入acl认证-2"><a class="markdownIt-Anchor" href="#加入acl认证-2"></a> 加入ACL认证</h5>
+<p>1.生成UUID</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">uuidgen</span><br><span class="line"></span><br><span class="line">output:</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>2.分别在<code>consul_server_1</code> 、<code>consul_server_2</code> 、<code>consul_server_3</code> 的<code>config</code> 文件夹中新增<code>acl.hcl</code> 配置文件</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vim config/acl.hcl</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">primary_datacenter = &quot;dc1&quot;</span><br><span class="line">acl &#123;</span><br><span class="line">  enabled = true</span><br><span class="line">  default_policy = &quot;deny&quot;</span><br><span class="line">  enable_token_persistence = true</span><br><span class="line">  tokens &#123;</span><br><span class="line">    master = &quot;487d910a-a599-49b5-979e-57855e53b3b0&quot;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>参数说明：</p>
+<ul>
+<li><code>enabled = true</code>：代表开启ACL</li>
+<li><code>default_policy=“deny”</code>：默认为allow，如果需要自定义权限，需要将其设置为deny</li>
+<li><code>enable_token_persistence =true</code>： 开启token持久化，将token持久化到磁盘上</li>
+</ul>
+<p>3.重启 <code>consul_server_1</code> 、 <code>consul_server_2</code> 、<code>consul_server_3</code> 服务</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">docker restart consul_server_1</span><br><span class="line"></span><br><span class="line">docker restart consul_server_2</span><br><span class="line"></span><br><span class="line">docker restart consul_server_3</span><br></pre></td></tr></table></figure>
+<p>5.启动UI界面查看，登录需要<code>secreatID</code>验证，即输入<code>acl.hcl</code> 配置文件中的<code>master</code> token</p>
+<hr />
+<h4 id="多台服务器部署"><a class="markdownIt-Anchor" href="#多台服务器部署"></a> 多台服务器部署</h4>
+<p>目前查找到能部署成功的方式是通过network的方式。</p>
+<h5 id="server1-3"><a class="markdownIt-Anchor" href="#server1-3"></a> server1</h5>
+<p>服务器IP：192.168.26.73</p>
+<p>1.进入到 <code>config</code> 目录下</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cd server1/config</span><br></pre></td></tr></table></figure>
+<p>2.创建 <code>config.json</code> 配置文件</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vim config.json</span><br></pre></td></tr></table></figure>
+<p>![image-20240226151703284](/imgs/2.png</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    &quot;datacenter&quot;: &quot;dc1&quot;,</span><br><span class="line">    &quot;bootstrap_expect&quot;: 3,</span><br><span class="line">    &quot;data_dir&quot;: &quot;/consul/data&quot;,</span><br><span class="line">    &quot;log_file&quot;: &quot;/consul/log/&quot;,</span><br><span class="line">    &quot;log_level&quot;: &quot;INFO&quot;,	</span><br><span class="line">    &quot;node_name&quot;: &quot;consul_server_1&quot;,</span><br><span class="line">    &quot;client_addr&quot;: &quot;0.0.0.0&quot;,</span><br><span class="line">    &quot;server&quot;: true,</span><br><span class="line">    &quot;ui&quot;: true,</span><br><span class="line">    &quot;enable_script_checks&quot;: true,</span><br><span class="line">    &quot;addresses&quot;: &#123;</span><br><span class="line">        &quot;https&quot;: &quot;0.0.0.0&quot;,</span><br><span class="line">        &quot;dns&quot;: &quot;0.0.0.0&quot;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="/imgs/image-20240226161334661.png" alt="image-20240226161334661" /></p>
+<p><code>log_file</code>： 应该是 “/consul/log/”</p>
+<p>3.配置启动命令</p>
+<p>在<code>server1</code> 目录下 创建启动脚本<code>run.sh</code></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mkdir run.sh</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">!/bin/bash</span></span><br><span class="line"></span><br><span class="line">docker run -d --net=host --name=consul_server_1 -v $PWD/data:/consul/data -v $PWD/config:/consul/config -v $PWD/log:/consul/log -e CONSUL_BIND_INTERFACE=&#x27;ens192&#x27; consul agent -bind=192.168.26.73 -config-dir=/consul/config/config.json</span><br></pre></td></tr></table></figure>
+<p>参数说明</p>
+<ul>
+<li><code>-d</code>：在后台运行容器。</li>
+<li><code>--network=host</code>：将容器连接到名为host的网络</li>
+<li><code>--name=consul_server_1</code> ：指定容器名称为consul_server_1。</li>
+<li><code>-v $PWD/data:/consul/data</code>：挂载宿主机上的数据存储目录到容器中的<code>/consul/data</code> 目录</li>
+<li><code>-v $PWD/config:/consul/config</code>：挂载宿主机上的配置文件目录到容器中的<code>/consul/config</code> 目录</li>
+<li><code>-v $PWD/log:/consul/log</code>：挂载宿主机上的日志输出目录到容器中的<code>/consul/log</code> 目录</li>
+<li><code>-e CONSUL_BIND_INTERFACE='ens192'</code>：通过环境变量<code>CONSUL_BIND_INTERFACE</code>指定Consul绑定的网卡接口为<code>ens192</code>（这个根据实际的网卡名称，通过<code>ifconfig</code> 命令查看）</li>
+<li><code>consul agent</code> ：启动consul agent</li>
+<li><code>-bind=192.168.26.73</code>：指定Consul节点在Docker容器内监听的IP地址（服务器IP）</li>
+<li><code>-config-dir=/consul/config/config.json</code>：指定配置文件路径（容器内），consul会自动读取配置文件中的参数</li>
+</ul>
+<p><img src="/imgs/image-20240227174226118.png" alt="image-20240227174226118" /></p>
+<p>4.启动服务</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sh run.sh</span><br></pre></td></tr></table></figure>
+<p>启动后，因为配置了bootstrap_expect=3，但只启动了一个server，所以会报错：没有集群领导者</p>
+<p><img src="/imgs/4.png" alt="4" /></p>
+<p>需要把另外2个服务也启动起来！</p>
+<h5 id="server2-2"><a class="markdownIt-Anchor" href="#server2-2"></a> server2</h5>
+<p>服务器IP：192.168.26.74</p>
+<p>1.进入到 <code>config</code> 目录下</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cd server2/config</span><br></pre></td></tr></table></figure>
+<p>2.创建 <code>config.json</code> 配置文件</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vim config.json</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    &quot;datacenter&quot;: &quot;dc1&quot;,</span><br><span class="line">    &quot;bootstrap_expect&quot;: 3,</span><br><span class="line">    &quot;data_dir&quot;: &quot;/consul/data&quot;,</span><br><span class="line">    &quot;log_file&quot;: &quot;/consul/log/&quot;,</span><br><span class="line">    &quot;log_level&quot;: &quot;INFO&quot;,	</span><br><span class="line">    &quot;node_name&quot;: &quot;consul_server_2&quot;,</span><br><span class="line">    &quot;client_addr&quot;: &quot;0.0.0.0&quot;,</span><br><span class="line">    &quot;server&quot;: true,</span><br><span class="line">    &quot;ui&quot;: true,</span><br><span class="line">    &quot;enable_script_checks&quot;: true,</span><br><span class="line">    &quot;addresses&quot;: &#123;</span><br><span class="line">        &quot;https&quot;: &quot;0.0.0.0&quot;,</span><br><span class="line">        &quot;dns&quot;: &quot;0.0.0.0&quot;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>3.配置启动命令</p>
+<p>在<code>server2</code> 目录下 创建启动脚本<code>run.sh</code></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mkdir run.sh</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">!/bin/bash</span></span><br><span class="line"></span><br><span class="line">docker run -d --network=host --name=consul_server_2 -v $PWD/data:/consul/data -v $PWD/config:/consul/config -v $PWD/log:/consul/log -e CONSUL_BIND_INTERFACE=&#x27;ens192&#x27; consul agent -bind=192.168.26.74 -join=192.168.26.73</span><br></pre></td></tr></table></figure>
+<p>参数说明</p>
+<ul>
+<li><code>-join=192.168.26.73</code>：将节点加入到<code>consul_server_1</code> IP上</li>
+</ul>
+<p><img src="/imgs/image-20240227174405828.png" alt="image-20240227174405828" /></p>
+<p>4.启动服务</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sh run.sh</span><br></pre></td></tr></table></figure>
+<h5 id="server3-2"><a class="markdownIt-Anchor" href="#server3-2"></a> server3</h5>
+<p>服务器IP：192.168.26.75</p>
+<p>1.进入到 <code>config</code> 目录下</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cd server3/config</span><br></pre></td></tr></table></figure>
+<p>2.创建 <code>config.json</code> 配置文件</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vim config.json</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    &quot;datacenter&quot;: &quot;dc1&quot;,</span><br><span class="line">    &quot;bootstrap_expect&quot;: 3,</span><br><span class="line">    &quot;data_dir&quot;: &quot;/consul/data&quot;,</span><br><span class="line">    &quot;log_file&quot;: &quot;/consul/log/&quot;,</span><br><span class="line">    &quot;log_level&quot;: &quot;INFO&quot;,	</span><br><span class="line">    &quot;node_name&quot;: &quot;consul_server_3&quot;,</span><br><span class="line">    &quot;client_addr&quot;: &quot;0.0.0.0&quot;,</span><br><span class="line">    &quot;server&quot;: true,</span><br><span class="line">    &quot;ui&quot;: true,</span><br><span class="line">    &quot;enable_script_checks&quot;: true,</span><br><span class="line">    &quot;addresses&quot;: &#123;</span><br><span class="line">        &quot;https&quot;: &quot;0.0.0.0&quot;,</span><br><span class="line">        &quot;dns&quot;: &quot;0.0.0.0&quot;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>3.配置启动命令</p>
+<p>在<code>server3</code> 目录下 创建启动脚本<code>run.sh</code></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mkdir run.sh</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">!/bin/bash</span></span><br><span class="line"></span><br><span class="line">docker run -d --network=host --name=consul_server_3 -v $PWD/data:/consul/data -v $PWD/config:/consul/config -v $PWD/log:/consul/log -e CONSUL_BIND_INTERFACE=&#x27;ens192&#x27; consul agent -bind=192.168.26.75 -join=192.168.26.73 -config-dir=/consul/config/config.json</span><br></pre></td></tr></table></figure>
+<p>参数说明</p>
+<ul>
+<li><code>-join=192.168.26.73</code>：将节点加入到<code>consul_server_1</code> IP上</li>
+</ul>
+<p><img src="/imgs/image-20240227174802437.png" alt="image-20240227174802437" /></p>
+<p>4.启动服务</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sh run.sh</span><br></pre></td></tr></table></figure>
+<p><img src="/imgs/image-20240227174946704.png" alt="image-20240227174946704" /></p>
+<h5 id="节点自动加入集群"><a class="markdownIt-Anchor" href="#节点自动加入集群"></a> 节点自动加入集群</h5>
+<p>1.分别编辑<code>sverer1</code>、<code>sverer2</code>、<code>sverer3</code> 的配置文件，加入<code>start_join</code> 和 <code>retry_join</code> 字段</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vim config/config.json</span><br></pre></td></tr></table></figure>
+<p><img src="/imgs/image-20240229141458532.png" alt="image-20240229141458532" /></p>
+<p><code>server2</code> 和 <code>server3</code> 同样配置。</p>
+<p>2.重新加载配置文件，验证配置是否正确</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker exec consul_server_1 consul reload</span><br></pre></td></tr></table></figure>
+<p><img src="/imgs/image-20240229143001728.png" alt="image-20240229143001728" /></p>
+<p>我测试的<code>consul_server_2</code> 是 <code>leader</code>，加入了配置，但是没有重启<code>leader</code>。我重启的是 <code>consul_server_1</code>，测试优雅退出 <code>consul_server_1</code>，然后再重启，发现自动加入到了节点；也测试 <code>consul_server_3</code> 不加配置，然后优雅退出 <code>consul_server_3</code> 再重启，发现 <code>consul_server_3</code> 也自动加入到了节点。（这是为什么呢，从测试的结果来看，只要一个节点加入配置即可）</p>
+<h5 id="加入acl认证-3"><a class="markdownIt-Anchor" href="#加入acl认证-3"></a> 加入ACL认证</h5>
+<p>方法一：配置<code>acl.hcl </code>，通过consul acl bootstrap 生成token，然后把生成的token当做 <code>master</code> 的token。</p>
+<p>本文档不采用该方法，有兴趣的可以自行去了解。<a target="_blank" rel="noopener" href="https://blog.csdn.net/li450126014/article/details/105951195?spm=1001.2101.3001.6650.5&amp;utm_medium=distribute.pc_relevant.none-task-blog-2%7Edefault%7EBlogCommendFromBaidu%7ERate-5-105951195-blog-111150583.235%5Ev43%5Epc_blog_bottom_relevance_base4&amp;depth_1-utm_source=distribute.pc_relevant.none-task-blog-2%7Edefault%7EBlogCommendFromBaidu%7ERate-5-105951195-blog-111150583.235%5Ev43%5Epc_blog_bottom_relevance_base4&amp;utm_relevant_index=10">参考文档</a> 中【增加ACL token权限配置】目录。</p>
+<p>方法二：使用linux的 <code>uuidgen</code> 命令生成一个64位UUID作为 <code>master</code> token，写入<code>acl.hcl</code> 配置文件中</p>
+<p>1.生成UUID</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">uuidgen</span><br></pre></td></tr></table></figure>
+<p>output:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">17b0d7f6-cd24-4989-ad84-9e1e5c938ce8</span><br></pre></td></tr></table></figure>
+<p><img src="/imgs/image-20240229144313793.png" alt="image-20240229144313793" /></p>
+<p>2.分别在<code>consul_server_1</code> 、 <code>consul_server_2</code> 、<code>consul_server_3</code> 的 <code>config</code>文件夹中 新增<code>acl.hcl</code> 配置文件，并将生成的token 加入文件中</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vim config/acl.hcl</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">primary_datacenter = &quot;dc1&quot;</span><br><span class="line">acl &#123;</span><br><span class="line">  enabled = true</span><br><span class="line">  default_policy = &quot;deny&quot;</span><br><span class="line">  enable_token_persistence = true</span><br><span class="line">  tokens &#123;</span><br><span class="line">    master = &quot;17b0d7f6-cd24-4989-ad84-9e1e5c938ce8&quot;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>参数说明：</p>
+<ul>
+<li><code>enabled = true</code>：代表开启ACL</li>
+<li><code>default_policy=“deny”</code>：默认为allow，如果需要自定义权限，需要将其设置为deny</li>
+<li><code>enable_token_persistence =true</code>： 开启token持久化，将token持久化到磁盘上</li>
+</ul>
+<p>3.重启 <code>consul_server_1</code> 、 <code>consul_server_2</code> 、<code>consul_server_3</code> 服务</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">docker restart consul_server_1</span><br><span class="line"></span><br><span class="line">docker restart consul_server_2</span><br><span class="line"></span><br><span class="line">docker restart consul_server_3</span><br></pre></td></tr></table></figure>
+<p>4.启动UI界面查看</p>
+<p><img src="/imgs/image-20240229161256697.png" alt="image-20240229161256697" /></p>
+<p>输入 <code>acl.hcl</code> 配置文件中的 <code>master</code> 的 token</p>
+<p><img src="/imgs/image-20240229161313672.png" alt="image-20240229161313672" /></p>
+<p><img src="/imgs/image-20240229161433696.png" alt="image-20240229161433696" /></p>
+
+      
+    </div>
+    <div class="article-footer">
+      <blockquote class="mt-2x">
+  <ul class="post-copyright list-unstyled">
+    
+    <li class="post-copyright-link hidden-xs">
+      <strong>本文链接：</strong>
+      <a href="https://www.yanwq.com/2024/03/20/docker%20consul%20%E9%9B%86%E7%BE%A4%E9%83%A8%E7%BD%B2/" title="docker consul 集群部署" target="_blank" rel="external">https://www.yanwq.com/2024/03/20/docker consul 集群部署/</a>
+    </li>
+    
+    <li class="post-copyright-license">
+      <strong>版权声明： </strong> 本博客所有文章除特别声明外，均采用 <a href="http://creativecommons.org/licenses/by/4.0/deed.zh" target="_blank" rel="external">CC BY 4.0 CN协议</a> 许可协议。转载请注明出处！
+    </li>
+  </ul>
+</blockquote>
+
+
+<div class="panel panel-default panel-badger">
+  <div class="panel-body">
+    <figure class="media">
+      <div class="media-left">
+        <a href="https://github.com/ywq0811" target="_blank" class="img-burn thumb-sm visible-lg">
+          <img src="/images/avatar.jpg" class="img-rounded w-full" alt="">
+        </a>
+      </div>
+      <div class="media-body">
+        <h3 class="media-heading"><a href="https://github.com/ywq0811" target="_blank"><span class="text-dark">yanwq</span><small class="ml-1x">Go Developer</small></a></h3>
+        <div>个人简介。</div>
+      </div>
+    </figure>
+  </div>
+</div>
+
+
+    </div>
+  </article>
+  
+    
+  <section id="comments">
+  	
+
+    
+  </section>
+
+
+  
+</div>
+
+  <nav class="bar bar-footer clearfix" data-stick-bottom>
+  <div class="bar-inner">
+  
+  <ul class="pager pull-left">
+    
+    <li class="prev">
+      <a href="/2024/03/20/docker%20consul%20%E9%9B%86%E7%BE%A4%E9%83%A8%E7%BD%B2%E9%AA%8C%E8%AF%81/" title="docker consul 集群部署验证"><i class="icon icon-angle-left" aria-hidden="true"></i><span>&nbsp;&nbsp;上一篇</span></a>
+    </li>
+    
+    
+    <li class="next">
+      <a href="/2024/03/20/docker%E9%83%A8%E7%BD%B2grafana/" title="docker 部署grafana"><span>下一篇&nbsp;&nbsp;</span><i class="icon icon-angle-right" aria-hidden="true"></i></a>
+    </li>
+    
+    
+    <li class="toggle-toc">
+      <a class="toggle-btn " data-toggle="collapse" href="#collapseToc" aria-expanded="false" title="文章目录" role="button">    <span>[&nbsp;</span><span>文章目录</span>
+        <i class="text-collapsed icon icon-anchor"></i>
+        <i class="text-in icon icon-close"></i>
+        <span>]</span>
+      </a>
+    </li>
+    
+  </ul>
+  
+  
+  
+  <div class="bar-right">
+    
+  </div>
+  </div>
+</nav>
+  
+
+
+</main>
+
+  <footer class="footer" itemscope itemtype="http://schema.org/WPFooter">
+	
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/ywq0811" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+    </ul>
+
+    <div class="copyright">
+    	
+        <div class="publishby">
+        	Theme by <a href="https://github.com/cofess" target="_blank"> cofess </a>base on <a href="https://github.com/cofess/hexo-theme-pure" target="_blank">pure</a>.
+        </div>
+    </div>
+</footer>
+  <script src="//cdn.jsdelivr.net/npm/jquery@1.12.4/dist/jquery.min.js"></script>
+<script>
+window.jQuery || document.write('<script src="js/jquery.min.js"><\/script>')
+</script>
+
+<script src="/js/plugin.min.js"></script>
+
+
+<script src="/js/application.js"></script>
+
+
+    <script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(未命名)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+
+<script src="/js/insight.js"></script>
+
+
+
+
+
+
+   
+
+
+
+
+   
+    
+<script src="//cdn.jsdelivr.net/npm/gitment@0.0.3/dist/gitment.browser.min.js"></script>
+<script>
+var gitment = new Gitment({
+  // id默认为当前页面url，如果url后带参数或锚点，gitment要重新初始化
+  // https://github.com/imsun/gitment/issues/55
+  // 解决方案：id:window.location.pathname,或者将id设置为当前页面标题
+  id: 'docker consul 集群部署', 
+  owner: '', // 可以是你的GitHub用户名，也可以是github id
+  repo: '',
+  oauth: {
+    client_id: '',
+    client_secret: '',
+  }
+})
+gitment.render('comments')
+</script>
+
+
+
+
+
+
+
+
+
+</body>
+</html>
