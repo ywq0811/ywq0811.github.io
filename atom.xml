@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>yanwq</title>
+  
+  <subtitle>blog</subtitle>
+  <link href="https://www.yanwq.com/atom.xml" rel="self"/>
+  
+  <link href="https://www.yanwq.com/"/>
+  <updated>2024-03-20T03:21:17.946Z</updated>
+  <id>https://www.yanwq.com/</id>
+  
+  <author>
+    <name>yanwq</name>
+    
+  </author>
+  
+  <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>test</title>
+    <link href="https://www.yanwq.com/2024/03/18/test/"/>
+    <id>https://www.yanwq.com/2024/03/18/test/</id>
+    <published>2024-03-18T12:01:58.664Z</published>
+    <updated>2024-03-20T03:21:17.946Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id="test"><a class="markdownIt-Anchor" href="#test"></a> test</h2><pre><code>demo测试</code></pre>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;h2 id=&quot;test&quot;&gt;&lt;a class=&quot;markdownIt-Anchor&quot; href=&quot;#test&quot;&gt;&lt;/a&gt; test&lt;/h2&gt;
+&lt;pre&gt;&lt;code&gt;demo测试
+&lt;/code&gt;&lt;/pre&gt;
+</summary>
+      
+    
+    
+    
+    <category term="后端开发" scheme="https://www.yanwq.com/categories/%E5%90%8E%E7%AB%AF%E5%BC%80%E5%8F%91/"/>
+    
+    
+    <category term="go" scheme="https://www.yanwq.com/tags/go/"/>
+    
+  </entry>
+  
+</feed>
