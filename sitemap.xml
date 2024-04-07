@@ -2,6 +2,15 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>https://www.yanwq.com/2024/04/07/uos-arm64%E5%9B%BD%E4%BA%A7%E5%8C%96/</loc>
+    
+    <lastmod>2024-04-07</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
     <loc>https://www.yanwq.com/2024/03/20/RabbitMQ%E9%83%A8%E7%BD%B2/</loc>
     
     <lastmod>2024-03-20</lastmod>
@@ -256,7 +265,7 @@
 
   <url>
     <loc>https://www.yanwq.com/</loc>
-    <lastmod>2024-03-20</lastmod>
+    <lastmod>2024-04-07</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
@@ -264,112 +273,133 @@
   
   <url>
     <loc>https://www.yanwq.com/tags/go/</loc>
-    <lastmod>2024-03-20</lastmod>
+    <lastmod>2024-04-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://www.yanwq.com/tags/db/</loc>
-    <lastmod>2024-03-20</lastmod>
+    <lastmod>2024-04-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://www.yanwq.com/tags/proto/</loc>
-    <lastmod>2024-03-20</lastmod>
+    <lastmod>2024-04-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://www.yanwq.com/tags/grafana/</loc>
-    <lastmod>2024-03-20</lastmod>
+    <lastmod>2024-04-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://www.yanwq.com/tags/consul/</loc>
-    <lastmod>2024-03-20</lastmod>
+    <lastmod>2024-04-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://www.yanwq.com/tags/oracle/</loc>
-    <lastmod>2024-03-20</lastmod>
+    <lastmod>2024-04-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://www.yanwq.com/tags/docker/</loc>
-    <lastmod>2024-03-20</lastmod>
+    <lastmod>2024-04-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://www.yanwq.com/tags/es/</loc>
-    <lastmod>2024-03-20</lastmod>
+    <lastmod>2024-04-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://www.yanwq.com/tags/mysql/</loc>
-    <lastmod>2024-03-20</lastmod>
+    <lastmod>2024-04-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://www.yanwq.com/tags/cron/</loc>
-    <lastmod>2024-03-20</lastmod>
+    <lastmod>2024-04-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://www.yanwq.com/tags/go-zero/</loc>
-    <lastmod>2024-03-20</lastmod>
+    <lastmod>2024-04-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://www.yanwq.com/tags/wsl2/</loc>
-    <lastmod>2024-03-20</lastmod>
+    <lastmod>2024-04-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://www.yanwq.com/tags/https/</loc>
-    <lastmod>2024-03-20</lastmod>
+    <lastmod>2024-04-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://www.yanwq.com/tags/ubuntu/</loc>
-    <lastmod>2024-03-20</lastmod>
+    <lastmod>2024-04-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://www.yanwq.com/tags/rabbitMQ/</loc>
-    <lastmod>2024-03-20</lastmod>
+    <lastmod>2024-04-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://www.yanwq.com/tags/node/</loc>
-    <lastmod>2024-03-20</lastmod>
+    <lastmod>2024-04-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://www.yanwq.com/tags/arm64/</loc>
+    <lastmod>2024-04-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://www.yanwq.com/tags/sqlite/</loc>
+    <lastmod>2024-04-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://www.yanwq.com/tags/%E8%BE%BE%E6%A2%A6%E6%95%B0%E6%8D%AE%E5%BA%93/</loc>
+    <lastmod>2024-04-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
@@ -378,49 +408,49 @@
   
   <url>
     <loc>https://www.yanwq.com/categories/DB/</loc>
-    <lastmod>2024-03-20</lastmod>
+    <lastmod>2024-04-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://www.yanwq.com/categories/Proto/</loc>
-    <lastmod>2024-03-20</lastmod>
+    <lastmod>2024-04-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://www.yanwq.com/categories/Docker/</loc>
-    <lastmod>2024-03-20</lastmod>
+    <lastmod>2024-04-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://www.yanwq.com/categories/Linux/</loc>
-    <lastmod>2024-03-20</lastmod>
+    <lastmod>2024-04-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://www.yanwq.com/categories/Go/</loc>
-    <lastmod>2024-03-20</lastmod>
+    <lastmod>2024-04-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://www.yanwq.com/categories/Ubuntu/</loc>
-    <lastmod>2024-03-20</lastmod>
+    <lastmod>2024-04-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://www.yanwq.com/categories/Windows/</loc>
-    <lastmod>2024-03-20</lastmod>
+    <lastmod>2024-04-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>

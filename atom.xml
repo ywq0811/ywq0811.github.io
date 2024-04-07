@@ -6,7 +6,7 @@
   <link href="https://www.yanwq.com/atom.xml" rel="self"/>
   
   <link href="https://www.yanwq.com/"/>
-  <updated>2024-03-20T11:19:03.615Z</updated>
+  <updated>2024-04-07T08:10:58.840Z</updated>
   <id>https://www.yanwq.com/</id>
   
   <author>
@@ -15,6 +15,38 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>uos-arm64 项目国产化部署</title>
+    <link href="https://www.yanwq.com/2024/04/07/uos-arm64%E5%9B%BD%E4%BA%A7%E5%8C%96/"/>
+    <id>https://www.yanwq.com/2024/04/07/uos-arm64%E5%9B%BD%E4%BA%A7%E5%8C%96/</id>
+    <published>2024-04-07T08:00:01.428Z</published>
+    <updated>2024-04-07T08:10:58.840Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id="国产化部署"><a class="markdownIt-Anchor" href="#国产化部署"></a> 国产化部署</h2><p>说明：在 <code>Uos</code> 操作系统<code>arm64</code>架构服务器上实现项目国产化。</p><p>实现列表：</p><ol><li>应用层</li><li>Sqlite</li><li>达梦数据库</li></ol><hr /><h4 id="应用层"><a class="markdownIt-Anchor" href="#应用层"></a> 应用层</h4><h5 id="可执行文件启动"><a class="markdownIt-Anchor" href="#可执行文件启动"></a> 可执行文件启动</h5><p>说明：由于这个服务需要用到Sqlite，并且需要在linux/arm64服务器上执行。而我们的项目在windos环境下开发，就需要使用到交叉编译。由于安装了桌面版的ubuntu，可以通过linux环境访问到window路径。</p><ul><li>安装 <code>arm64</code> 交叉编译工具链</li></ul><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install gcc-aarch64-linux-gnu</span><br></pre></td></tr></table></figure><ul><li>设置环境变量（设置环境变量以指示编译器和链接器使用arm64交叉编译工具链）</li></ul><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">export CC=aarch64-linux-gnu-gcc</span><br><span class="line">export CXX=aarch64-linux-gnu-g++</span><br></pre></td></tr></table></figure><ul><li>通过linux环境进入到项目目录，交叉编译项目（以 <code>unix-test</code> 项目举例）</li></ul><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">cd unix-test</span><br><span class="line"></span><br><span class="line">GOOS=linux GOARCH=arm64 CGO_ENABLED=<span class="number">1</span> CC=aarch64-linux-gnu-gcc <span class="keyword">go</span> build -v --ldflags=<span class="string">&quot;-X &#x27;google.golang.org/protobuf/reflect/protoregistry.conflictPolicy=warn&#x27;&quot;</span> -o unix-test cmd/main.<span class="keyword">go</span></span><br></pre></td></tr></table></figure><ul><li>成功编译后，将可执行文件拷入 <code>linx/arm64</code> 服务器上</li><li>升级权限</li></ul><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">chmod +x unix-test</span><br></pre></td></tr></table></figure><ul><li>执行可执行文件</li></ul><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./unix-test</span><br></pre></td></tr></table></figure><p><img src="/imgs/image-20240315163638187.png" alt="image-20240315163638187" /></p><p>可以看到使用的 <code>Sqlite</code> 数据库，连接成功，并且调用接口成功。</p><hr /><h5 id="docker启动"><a class="markdownIt-Anchor" href="#docker启动"></a> docker启动</h5><p>在上面可执行文件基础上，使用arm64系统的基础镜像，进行docker部署</p><ul><li>进入镜像仓库地址选择满足arm64版本的基础镜像</li></ul><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https:<span class="comment">//hub.docker.com</span></span><br></pre></td></tr></table></figure><ul><li>在terminal(终端)上执行复制的命令(我使用的devel版本，可自行选择版本下载)</li></ul><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker pull arm64v8/ubuntu:devel</span><br></pre></td></tr></table></figure><p>注：这里试过无数个 <code>busybox</code> 基础镜像版本，都不行；<code>arm64v8/centos:latest</code> 测试过也是可以的，但是被弃用了，所以就使用ubuntu了</p><ul><li>将 <code>Dockerfile</code> 文件拷贝到服务器可执行文件 <code>unix-test</code>目录下， 修改<code>FROM</code></li></ul><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">FROM arm64v8/ubuntu:devel</span><br></pre></td></tr></table></figure><ul><li>构建镜像（演示的项目为unix-test）</li></ul><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker build -t unix-test:1.0.0 .</span><br></pre></td></tr></table></figure><ul><li>执行docker run 命令启动服务</li></ul><p><img src="/imgs/image-20240407155259272.png" alt="image-20240407155259272" /></p><hr /><h4 id="sqlite"><a class="markdownIt-Anchor" href="#sqlite"></a> Sqlite</h4><p>再windows环境下直接生成db文件即可。将db文件拷入 <code>linux/arm64</code>服务对应文件，读取即可。</p><ul><li>再windows下进入Sqlite目录下</li></ul><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Sqlite3</span><br></pre></td></tr></table></figure><ul><li>生成db文件（以 <code>unix-test.db</code> 为例）</li></ul><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">.open unix-test.db</span><br></pre></td></tr></table></figure><ul><li>再 <code>sqlite</code> 目录下会生成一个 <code>unix-test.db</code> 文件，拷入 <code>linux/arm64</code> 服务器对应位置</li></ul><hr /><h4 id="达梦数据库"><a class="markdownIt-Anchor" href="#达梦数据库"></a> 达梦数据库</h4><p>需要下载使用arm64系统的镜像</p><ul><li>在镜像仓库中找到满足的镜像</li></ul><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">https:<span class="comment">//hub.docker.com/r/qinchz/dm8-arm64</span></span><br><span class="line"></span><br><span class="line">我选择的是dm8</span><br></pre></td></tr></table></figure><ul><li>在terminal(终端)上执行复制的命令（镜像很大，下载很慢）</li></ul><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker pull qinchz/dm8-arm64</span><br></pre></td></tr></table></figure><ul><li>将基础镜像保存到本地</li></ul><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker save -o dm8-arm64.img qinchz/dm8-arm64:latest</span><br></pre></td></tr></table></figure><ul><li>将镜像拷入到arm64服务器</li><li>创建docker-compose.yml文件</li></ul><p>vim docker-compose.yml</p><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">version: <span class="string">&#x27;3&#x27;</span></span><br><span class="line">services:</span><br><span class="line">  DM8:</span><br><span class="line">    image: qinchz/dm8-arm64:latest</span><br><span class="line">    restart: always</span><br><span class="line">    container_name: dm8</span><br><span class="line">    ports:</span><br><span class="line">      - <span class="string">&quot;5236:5236&quot;</span></span><br><span class="line">    volumes:</span><br><span class="line">      - /home/test/kst/yanwq/md8/data:/home/dmdba/data</span><br></pre></td></tr></table></figure><p>参数说明：</p><ul><li><code>version: '3'</code>：指定使用的Docker Compose文件版本</li><li><code>services</code>：定义服务的部分开始</li><li><code>DM8</code>：定义服务的名称为DM8</li><li><code>image</code>：指定使用的镜像为qinchz/dm8-arm64:latest</li><li><code>restart: always</code>：指定容器在退出时自动重启</li><li><code>container_name: dm8</code>：指定创建的容器名称为dm8</li><li><code>ports</code>：指定容器端口映射关系</li><li><code>5236:5236</code>：将主机的5236端口映射到容器的5236端口</li><li><code>mem_limit: 1g</code>：限制容器使用的内存为1GB</li><li><code>memswap_limit: 1g</code>：限制容器可以使用的swap交换空间为1GB</li><li><code>volumes</code>：指定挂载卷的配置</li><li><code>/home/test/kst/yanwq/md8/data:/home/dmdba/data</code>：将主机的/home/test/kst/yanwq/md8/data目录挂载到容器的/home/dmdba/data目录，实现主机和容器之间的文件共享</li></ul><hr /><ul><li>启动服务</li></ul><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker-compose up -d</span><br></pre></td></tr></table></figure><p><a href="https://blog.csdn.net/qq_57484285/article/details/128191061?spm=1001.2101.3001.6650.7&amp;utm_medium=distribute.pc_relevant.none-task-blog-2%7Edefault%7EBlogCommendFromBaidu%7ERate-7-128191061-blog-123725042.235%5Ev43%5Epc_blog_bottom_relevance_base4&amp;depth_1-utm_source=distribute.pc_relevant.none-task-blog-2%7Edefault%7EBlogCommendFromBaidu%7ERate-7-128191061-blog-123725042.235%5Ev43%5Epc_blog_bottom_relevance_base4">使用DBeaver运行达梦数据库</a></p>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;h2 id=&quot;国产化部署&quot;&gt;&lt;a class=&quot;markdownIt-Anchor&quot; href=&quot;#国产化部署&quot;&gt;&lt;/a&gt; 国产化部署&lt;/h2&gt;
+&lt;p&gt;说明：在 &lt;code&gt;Uos&lt;/code&gt; 操作系统&lt;code&gt;arm64&lt;/code&gt;架构服务器上实现项目国产化。&lt;/p&gt;
+</summary>
+      
+    
+    
+    
+    <category term="Linux" scheme="https://www.yanwq.com/categories/Linux/"/>
+    
+    
+    <category term="docker" scheme="https://www.yanwq.com/tags/docker/"/>
+    
+    <category term="arm64" scheme="https://www.yanwq.com/tags/arm64/"/>
+    
+    <category term="sqlite" scheme="https://www.yanwq.com/tags/sqlite/"/>
+    
+    <category term="达梦数据库" scheme="https://www.yanwq.com/tags/%E8%BE%BE%E6%A2%A6%E6%95%B0%E6%8D%AE%E5%BA%93/"/>
+    
+  </entry>
   
   <entry>
     <title>RabbitMQ部署和使用文档</title>
@@ -494,32 +526,6 @@
     
     
     <category term="ubuntu" scheme="https://www.yanwq.com/tags/ubuntu/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>proto生成go文件指令</title>
-    <link href="https://www.yanwq.com/2024/03/20/proto%E7%94%9F%E6%88%90go%E6%96%87%E4%BB%B6%E6%8C%87%E4%BB%A4/"/>
-    <id>https://www.yanwq.com/2024/03/20/proto%E7%94%9F%E6%88%90go%E6%96%87%E4%BB%B6%E6%8C%87%E4%BB%A4/</id>
-    <published>2024-03-20T06:37:22.181Z</published>
-    <updated>2024-03-20T06:45:47.159Z</updated>
-    
-    <content type="html"><![CDATA[<h2 id="proto生成go文件指令"><a class="markdownIt-Anchor" href="#proto生成go文件指令"></a> proto生成go文件指令</h2><p>在当前目录下生成xxx.proto的pb文件</p><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">protoc --go_out ./ ./xxx.proto</span><br><span class="line">或</span><br><span class="line">protoc --go_out=. --<span class="keyword">go</span>-grpc_out=. kvps_forward.proto</span><br></pre></td></tr></table></figure><p>或者</p><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">protoc --go_out=. --go_opt=paths=source_relative --<span class="keyword">go</span>-grpc_out=. --<span class="keyword">go</span>-grpc_opt=paths=source_relative  wenet<span class="number">.20230301</span>.proto</span><br></pre></td></tr></table></figure>]]></content>
-    
-    
-      
-      
-    <summary type="html">&lt;h2 id=&quot;proto生成go文件指令&quot;&gt;&lt;a class=&quot;markdownIt-Anchor&quot; href=&quot;#proto生成go文件指令&quot;&gt;&lt;/a&gt; proto生成go文件指令&lt;/h2&gt;
-&lt;p&gt;在当前目录下生成xxx.proto的pb文件&lt;/p&gt;
-&lt;figure clas</summary>
-      
-    
-    
-    
-    <category term="Proto" scheme="https://www.yanwq.com/categories/Proto/"/>
-    
-    
-    <category term="proto" scheme="https://www.yanwq.com/tags/proto/"/>
     
   </entry>
   
