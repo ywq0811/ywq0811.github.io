@@ -6,7 +6,7 @@
   <link href="https://www.yanwq.com/atom.xml" rel="self"/>
   
   <link href="https://www.yanwq.com/"/>
-  <updated>2024-04-07T08:10:58.840Z</updated>
+  <updated>2024-04-10T10:53:28.974Z</updated>
   <id>https://www.yanwq.com/</id>
   
   <author>
@@ -15,6 +15,33 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>go通过gorm使用达梦数据库</title>
+    <link href="https://www.yanwq.com/2024/04/10/go%E9%80%9A%E8%BF%87gorm%E4%BD%BF%E7%94%A8%E8%BE%BE%E6%A2%A6%E6%95%B0%E6%8D%AE%E5%BA%93/"/>
+    <id>https://www.yanwq.com/2024/04/10/go%E9%80%9A%E8%BF%87gorm%E4%BD%BF%E7%94%A8%E8%BE%BE%E6%A2%A6%E6%95%B0%E6%8D%AE%E5%BA%93/</id>
+    <published>2024-04-10T10:46:32.681Z</published>
+    <updated>2024-04-10T10:53:28.974Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id="go通过gorm使用达梦数据库"><a class="markdownIt-Anchor" href="#go通过gorm使用达梦数据库"></a> go通过gorm使用达梦数据库</h2><p>根据官方文档说明，go想要通过gorm使用达梦数据库，需要下载orm方言包。</p><p><img src="/imgs/image-20240410111239029.png" alt="image-20240410111239029" /></p><p>如图所示，达梦官方提供了2个版本的orm方言包</p><ul><li>V1：<a href="http://github.com/jinzhu/gorm">github.com/jinzhu/gorm</a></li><li>V2：<a href="http://gorm.io/gorm">gorm.io/gorm</a></li></ul><p>本文档演示使用的是V2版本方言包</p><hr /><h4 id="准备"><a class="markdownIt-Anchor" href="#准备"></a> 准备</h4><ul><li><code>dm</code> 驱动包 + 依赖</li><li>v2方言包</li></ul><p>go官方驱动地址：<a href="https://download.dameng.com/eco/adapter/resource/go/dm-go-driver.zip">https://download.dameng.com/eco/adapter/resource/go/dm-go-driver.zip</a></p><p>下载好解压目录如下：</p><ul><li>dm-go-driver.zip  // 驱动包</li><li>gorm_v1_dialect.zip  // v1方言包</li><li>gorm_v2_dialect.zip  // v2方言包</li></ul><p><strong>步骤</strong></p><ol><li><p>将 <code>dm-go-driver.zip</code> 解压之后，把 <code>dm</code> 包拷入到 <code>GOPATH</code>的<code>src</code> 目录下 【这个是dm驱动包】</p></li><li><p>在 <code>src</code> 目录下 终端下载依赖包</p><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">go get github.com/golang/snappy</span><br><span class="line"></span><br><span class="line">go get golang.org/x/text/encoding</span><br></pre></td></tr></table></figure></li><li><p>创建项目（演示的demo项目为 <code>dm8-test</code>）</p></li><li><p>将 <code>gorm_v2_dialect.zip</code> 解压之后，把<code>dm</code> 包拷入到<code>dm8-test</code> 项目 目录下（查看下面结构树）【这个是dm方言包】</p><p>此时，目录树如下</p><p>src<br />├── dm  // 驱动包<br />├── dm8-test  // 演示demo<br />│   ├── dm  // 方言包<br />│   │   ├── create.go<br />│   │   ├── dm.go<br />│   │   ├── dm_test.go<br />│   │   └── migrator.go<br />│   ├── go.mod<br />│   ├── go.sum<br />│   └── main.go<br />├── <a href="http://github.com">github.com</a> // 依赖包<br />└── <a href="http://golang.org">golang.org</a>  // 依赖包</p></li><li><p>打开项目（演示的demo项目为 <code>dm8-test</code>）-&gt; <code>go.mod</code> -&gt; 新增<code>replace dm =&gt; ../dm</code> （指定dm包的来源路径）</p></li></ol><p><img src="/imgs/image-20240410114700871.png" alt="image-20240410114700871" /></p><hr /><h4 id="连接"><a class="markdownIt-Anchor" href="#连接"></a> 连接</h4><p>在 <code>main.go</code> 中测试连接</p><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line"><span class="string">&quot;dm8-test/dm&quot;</span></span><br><span class="line"><span class="string">&quot;fmt&quot;</span></span><br><span class="line"><span class="string">&quot;gorm.io/gorm&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">_, err := gorm.Open(dm.Open(<span class="string">&quot;dm://SYSDBA:SYSDBA@dm数据库IP:5236&quot;</span>), &amp;gorm.Config&#123;&#125;)</span><br><span class="line"><span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line"><span class="built_in">panic</span>(<span class="string">&quot;failed to connect database&quot;</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">fmt.Println(<span class="string">&quot;connect dm8 success!!&quot;</span>)</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><p><img src="/imgs/image-20240410115921736.png" alt="image-20240410115921736" /></p><h4 id="其他"><a class="markdownIt-Anchor" href="#其他"></a> 其他</h4><p>如果需要封装达梦数据库到组件中，可以把dm驱动包 和 dm方言包拷入对应组件中，记得需要删除dm驱动包中的 <code>go.mod</code> 和 <code>.idea</code> ，加到组件包的 <code>go.mod</code>中即可，同时还需要修改dm方言包中的引用dm驱动包的路径（除去GOPATH的实际路径即可）</p><p><img src="/imgs/image-20240410184441301.png" alt="image-20240410184441301" /></p>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;h2 id=&quot;go通过gorm使用达梦数据库&quot;&gt;&lt;a class=&quot;markdownIt-Anchor&quot; href=&quot;#go通过gorm使用达梦数据库&quot;&gt;&lt;/a&gt; go通过gorm使用达梦数据库&lt;/h2&gt;
+&lt;p&gt;根据官方文档说明，go想要通过gorm使用达梦数据库，需要下载or</summary>
+      
+    
+    
+    
+    <category term="Go" scheme="https://www.yanwq.com/categories/Go/"/>
+    
+    
+    <category term="达梦数据库" scheme="https://www.yanwq.com/tags/%E8%BE%BE%E6%A2%A6%E6%95%B0%E6%8D%AE%E5%BA%93/"/>
+    
+    <category term="gorm" scheme="https://www.yanwq.com/tags/gorm/"/>
+    
+  </entry>
   
   <entry>
     <title>uos-arm64 项目国产化部署</title>
@@ -501,31 +528,6 @@
     
     
     <category term="https" scheme="https://www.yanwq.com/tags/https/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>重装 windows ubuntu</title>
-    <link href="https://www.yanwq.com/2024/03/20/%E9%87%8D%E8%A3%85windows%20ubunut/"/>
-    <id>https://www.yanwq.com/2024/03/20/%E9%87%8D%E8%A3%85windows%20ubunut/</id>
-    <published>2024-03-20T06:47:12.699Z</published>
-    <updated>2024-03-20T07:06:23.680Z</updated>
-    
-    <content type="html"><![CDATA[<h2 id="重装-windows-ubuntu"><a class="markdownIt-Anchor" href="#重装-windows-ubuntu"></a> 重装 windows ubuntu</h2><p>1.<a href="https://www.yuque.com/shaycormac/blog/tn88q0">https://www.yuque.com/shaycormac/blog/tn88q0</a> 根据这个文档安装wls2和docker destop</p><p>2.windows商店下载terminal</p><p>3.配置/etc/profile</p><p>4.保存配置 source profile</p><p>5.下载go</p><p>6.更新源</p><p><a href="https://www.cnblogs.com/ssxblog/p/11357126.html">https://www.cnblogs.com/ssxblog/p/11357126.html</a></p><p>7.安装mingw</p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">apt install gcc</span><br></pre></td></tr></table></figure><p>8.开始编译二进制文件（刚从gitlub clone下来需要go mod tidy）</p><p>9使用<code>make image</code>命令需要先安装apt install make 和 apt install make-guile ,可以按要求直接安装.</p><p>10.需要加载基础镜像<code>kvp-centos-ffmpeg-minial.img</code></p><p>(在/d/java/share里面),然后执行<code>docker load -i kvp-centos-ffmpeg-minial.img</code></p>]]></content>
-    
-    
-      
-      
-    <summary type="html">&lt;h2 id=&quot;重装-windows-ubuntu&quot;&gt;&lt;a class=&quot;markdownIt-Anchor&quot; href=&quot;#重装-windows-ubuntu&quot;&gt;&lt;/a&gt; 重装 windows ubuntu&lt;/h2&gt;
-&lt;p&gt;1.&lt;a href=&quot;https://www.yuqu</summary>
-      
-    
-    
-    
-    <category term="Windows" scheme="https://www.yanwq.com/categories/Windows/"/>
-    
-    
-    <category term="ubuntu" scheme="https://www.yanwq.com/tags/ubuntu/"/>
     
   </entry>
   

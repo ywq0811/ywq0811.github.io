@@ -1,3 +1,4 @@
+https://www.yanwq.com/2024/04/10/go%E9%80%9A%E8%BF%87gorm%E4%BD%BF%E7%94%A8%E8%BE%BE%E6%A2%A6%E6%95%B0%E6%8D%AE%E5%BA%93/
 https://www.yanwq.com/2024/04/07/uos-arm64%E5%9B%BD%E4%BA%A7%E5%8C%96/
 https://www.yanwq.com/2024/03/20/RabbitMQ%E9%83%A8%E7%BD%B2/
 https://www.yanwq.com/2024/03/20/163%E9%82%AE%E7%AE%B1%E4%BD%BF%E7%94%A8smtp%E6%9C%8D%E5%8A%A1%E5%8F%91%E9%80%81/
@@ -47,6 +48,7 @@ https://www.yanwq.com/tags/node/
 https://www.yanwq.com/tags/arm64/
 https://www.yanwq.com/tags/sqlite/
 https://www.yanwq.com/tags/%E8%BE%BE%E6%A2%A6%E6%95%B0%E6%8D%AE%E5%BA%93/
+https://www.yanwq.com/tags/gorm/
 https://www.yanwq.com/categories/DB/
 https://www.yanwq.com/categories/Proto/
 https://www.yanwq.com/categories/Docker/
