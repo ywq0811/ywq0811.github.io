@@ -1,3 +1,4 @@
+https://www.yanwq.com/2024/11/27/nginx%E5%9C%A8winodws%E5%AE%9E%E7%8E%B0%E5%BC%80%E6%9C%BA%E8%87%AA%E5%90%AF/
 https://www.yanwq.com/2024/10/17/windows%E4%B8%8B%E9%80%9A%E8%BF%87nginx%E9%85%8D%E7%BD%AE%E9%A1%B9%E7%9B%AE/
 https://www.yanwq.com/2024/03/20/docker%20consul%20%E9%9B%86%E7%BE%A4%E9%83%A8%E7%BD%B2/
 https://www.yanwq.com/2024/07/03/%E5%9B%BD%E4%BA%A7%E5%8C%96%E9%BA%92%E9%BA%9F%E5%AE%89%E8%A3%85ffmpeg/
@@ -54,6 +55,7 @@ https://www.yanwq.com/tags/gorm/
 https://www.yanwq.com/tags/ffmpeg/
 https://www.yanwq.com/tags/vue/
 https://www.yanwq.com/tags/nginx/
+https://www.yanwq.com/tags/WinSW/
 https://www.yanwq.com/categories/DB/
 https://www.yanwq.com/categories/Proto/
 https://www.yanwq.com/categories/Docker/
