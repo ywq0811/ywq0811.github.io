@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+  <meta charset="utf-8">
+  
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="Cache-Control" content="no-transform" />
+  <meta http-equiv="Cache-Control" content="no-siteapp" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="format-detection" content="telephone=no,email=no,adress=no">
+  <!-- Color theme for statusbar -->
+  <meta name="theme-color" content="#000000" />
+  <!-- 强制页面在当前窗口以独立页面显示,防止别人在框架里调用页面 -->
+  <meta http-equiv="window-target" content="_top" />
+  
+  
+  <title>go连接dm8数据库和操作示范文档 | yanwq</title>
+  <meta name="description" content="go连接dm8数据库和操作示范文档  1.安装DM数据库 请参考 DM 数据库快速上手指南 或者 达梦数据库安装和使用文档.md 数据库安装过程中，请勾选创建 BOOKSHOP，DMHR 示例库，作为数据库模拟环境，（勾选的目的是为了下面连接dm数据库进行增删改查操作作为示例，不然需要自行创建表和表数据）如下图所示：   2.安装DM驱动包 将提供的 DM 驱动包放在 GOPATH 的 src">
+<meta property="og:type" content="article">
+<meta property="og:title" content="go连接dm8数据库和操作示范文档">
+<meta property="og:url" content="https://www.yanwq.com/2024/12/17/go%E8%BF%9E%E6%8E%A5dm8%E6%95%B0%E6%8D%AE%E5%BA%93%E5%92%8C%E6%93%8D%E4%BD%9C%E7%A4%BA%E8%8C%83%E6%96%87%E6%A1%A3/index.html">
+<meta property="og:site_name" content="yanwq">
+<meta property="og:description" content="go连接dm8数据库和操作示范文档  1.安装DM数据库 请参考 DM 数据库快速上手指南 或者 达梦数据库安装和使用文档.md 数据库安装过程中，请勾选创建 BOOKSHOP，DMHR 示例库，作为数据库模拟环境，（勾选的目的是为了下面连接dm数据库进行增删改查操作作为示例，不然需要自行创建表和表数据）如下图所示：   2.安装DM驱动包 将提供的 DM 驱动包放在 GOPATH 的 src">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://www.yanwq.com/imgs/java-jdbc-dmhr.png">
+<meta property="og:image" content="https://www.yanwq.com/imgs/image-20221021154102867.png">
+<meta property="og:image" content="https://www.yanwq.com/imgs/image-20221021154442352.png">
+<meta property="og:image" content="https://www.yanwq.com/imgs/image-20221021155845102.png">
+<meta property="og:image" content="https://www.yanwq.com/imgs/image-20221021160404240.png">
+<meta property="og:image" content="https://www.yanwq.com/imgs/image-20221021160602890.png">
+<meta property="article:published_time" content="2024-12-17T05:54:45.689Z">
+<meta property="article:modified_time" content="2024-12-17T06:23:24.965Z">
+<meta property="article:author" content="yanwq">
+<meta property="article:tag" content="dm8">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://www.yanwq.com/imgs/java-jdbc-dmhr.png">
+  <!-- Canonical links -->
+  <link rel="canonical" href="https://www.yanwq.com/2024/12/17/go%E8%BF%9E%E6%8E%A5dm8%E6%95%B0%E6%8D%AE%E5%BA%93%E5%92%8C%E6%93%8D%E4%BD%9C%E7%A4%BA%E8%8C%83%E6%96%87%E6%A1%A3/index.html">
+  
+    <link rel="alternate" href="/atom.xml" title="yanwq" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+  
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitment@0.0.3/style/default.min.css">
+  
+  
+  
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?b839d137c29d9b42d962e7accfbb17ce";
+  var s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body class="main-center theme-black" itemscope itemtype="http://schema.org/WebPage">
+  <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+  <div class="slimContent">
+    <div class="navbar-header">
+      
+      
+      <div class="profile-block text-center">
+        <a id="avatar" href="https://github.com/ywq0811" target="_blank">
+          <img class="img-circle img-rotate" src="/images/avatar.jpg" width="200" height="200">
+        </a>
+        <h2 id="name" class="hidden-xs hidden-sm">yanwq</h2>
+        <h3 id="title" class="hidden-xs hidden-sm hidden-md">Go Developer</h3>
+        <small id="location" class="text-muted hidden-xs hidden-sm"><i class="icon icon-map-marker"></i> Xiamen, China</small>
+      </div>
+      
+      <div class="search" id="search-form-wrap">
+
+    <form class="search-form sidebar-form">
+        <div class="input-group">
+            <input type="text" class="search-form-input form-control" placeholder="搜索" />
+            <span class="input-group-btn">
+                <button type="submit" class="search-form-submit btn btn-flat" onclick="return false;"><i class="icon icon-search"></i></button>
+            </span>
+        </div>
+    </form>
+    <div class="ins-search">
+  <div class="ins-search-mask"></div>
+  <div class="ins-search-container">
+    <div class="ins-input-wrapper">
+      <input type="text" class="ins-search-input" placeholder="想要查找什么..." x-webkit-speech />
+      <button type="button" class="close ins-close ins-selectable" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+    </div>
+    <div class="ins-section-wrapper">
+      <div class="ins-section-container"></div>
+    </div>
+  </div>
+</div>
+
+
+</div>
+      <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#main-navbar" aria-controls="main-navbar" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <nav id="main-navbar" class="collapse navbar-collapse" itemscope itemtype="http://schema.org/SiteNavigationElement" role="navigation">
+      <ul class="nav navbar-nav main-nav ">
+        
+        
+        <li class="menu-item menu-item-home">
+          <a href="/.">
+            
+            <i class="icon icon-home-fill"></i>
+            
+            <span class="menu-title">首页</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives">
+            
+            <i class="icon icon-archives-fill"></i>
+            
+            <span class="menu-title">归档</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories">
+            
+            <i class="icon icon-folder"></i>
+            
+            <span class="menu-title">分类</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags">
+            
+            <i class="icon icon-tags"></i>
+            
+            <span class="menu-title">标签</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-repository">
+          <a href="/repository">
+            
+            <i class="icon icon-project"></i>
+            
+            <span class="menu-title">项目</span>
+          </a>
+        </li>
+        
+      </ul>
+      
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/ywq0811" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+    </ul>
+
+    </nav>
+  </div>
+</header>
+
+  
+    <aside class="sidebar" itemscope itemtype="http://schema.org/WPSideBar">
+  <div class="slimContent">
+    
+      <div class="widget">
+    <h3 class="widget-title">公告</h3>
+    <div class="widget-body">
+        <div id="board">
+            <div class="content">
+                <p>欢迎交流与分享经验!</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">分类</h3>
+    <div class="widget-body">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/DB/">DB</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Docker/">Docker</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git/">Git</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Go/">Go</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Proto/">Proto</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Ubuntu/">Ubuntu</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Windows/">Windows</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/linux/">linux</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/linux-arm64-%E9%B2%B2%E9%B9%8F/">linux/arm64 鲲鹏</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/windows/">windows</a><span class="category-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget-body">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/WinSW/" rel="tag">WinSW</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/arm64/" rel="tag">arm64</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/consul/" rel="tag">consul</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cron/" rel="tag">cron</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/db/" rel="tag">db</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dm8/" rel="tag">dm8</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/" rel="tag">docker</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/es%E6%95%B0%E6%8D%AE%E5%BA%93/" rel="tag">es数据库</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ffmpeg/" rel="tag">ffmpeg</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/git/" rel="tag">git</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/go/" rel="tag">go</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/go-zero/" rel="tag">go-zero</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/gorm/" rel="tag">gorm</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/grafana/" rel="tag">grafana</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/https/" rel="tag">https</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/linux/" rel="tag">linux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/" rel="tag">mysql</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/nginx/" rel="tag">nginx</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/node/" rel="tag">node</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/oracle/" rel="tag">oracle</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/proto/" rel="tag">proto</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rabbitMQ/" rel="tag">rabbitMQ</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/redis/" rel="tag">redis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sqlite/" rel="tag">sqlite</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ubuntu/" rel="tag">ubuntu</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vue/" rel="tag">vue</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/wrk/" rel="tag">wrk</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/wsl2/" rel="tag">wsl2</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%BE%BE%E6%A2%A6%E6%95%B0%E6%8D%AE%E5%BA%93/" rel="tag">达梦数据库</a><span class="tag-list-count">2</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签云</h3>
+    <div class="widget-body tagcloud">
+      <a href="/tags/WinSW/" style="font-size: 13px;">WinSW</a> <a href="/tags/arm64/" style="font-size: 13px;">arm64</a> <a href="/tags/consul/" style="font-size: 14px;">consul</a> <a href="/tags/cron/" style="font-size: 13px;">cron</a> <a href="/tags/db/" style="font-size: 13px;">db</a> <a href="/tags/dm8/" style="font-size: 13.33px;">dm8</a> <a href="/tags/docker/" style="font-size: 13.67px;">docker</a> <a href="/tags/es%E6%95%B0%E6%8D%AE%E5%BA%93/" style="font-size: 13px;">es数据库</a> <a href="/tags/ffmpeg/" style="font-size: 13px;">ffmpeg</a> <a href="/tags/git/" style="font-size: 13px;">git</a> <a href="/tags/go/" style="font-size: 13.33px;">go</a> <a href="/tags/go-zero/" style="font-size: 13.33px;">go-zero</a> <a href="/tags/gorm/" style="font-size: 13px;">gorm</a> <a href="/tags/grafana/" style="font-size: 13.33px;">grafana</a> <a href="/tags/https/" style="font-size: 13px;">https</a> <a href="/tags/linux/" style="font-size: 13px;">linux</a> <a href="/tags/mysql/" style="font-size: 13.67px;">mysql</a> <a href="/tags/nginx/" style="font-size: 13.33px;">nginx</a> <a href="/tags/node/" style="font-size: 13.33px;">node</a> <a href="/tags/oracle/" style="font-size: 13px;">oracle</a> <a href="/tags/proto/" style="font-size: 13px;">proto</a> <a href="/tags/rabbitMQ/" style="font-size: 13px;">rabbitMQ</a> <a href="/tags/redis/" style="font-size: 13px;">redis</a> <a href="/tags/sqlite/" style="font-size: 13px;">sqlite</a> <a href="/tags/ubuntu/" style="font-size: 13px;">ubuntu</a> <a href="/tags/vue/" style="font-size: 13px;">vue</a> <a href="/tags/wrk/" style="font-size: 13px;">wrk</a> <a href="/tags/wsl2/" style="font-size: 13px;">wsl2</a> <a href="/tags/%E8%BE%BE%E6%A2%A6%E6%95%B0%E6%8D%AE%E5%BA%93/" style="font-size: 13.33px;">达梦数据库</a>
+    </div>
+  </div>
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget-body">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/12/">十二月 2024</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/11/">十一月 2024</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/10/">十月 2024</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/07/">七月 2024</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/04/">四月 2024</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/03/">三月 2024</a><span class="archive-list-count">21</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/06/">六月 2023</a><span class="archive-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget-body">
+      <ul class="recent-post-list list-unstyled no-thumbnail">
+        
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/Docker/">Docker</a>
+              </p>
+              <p class="item-title">
+                <a href="/2024/12/17/kvpl-redis%E4%B8%80%E4%B8%BB%E4%B8%89%E4%BB%8E%E4%B8%89%E5%93%A8%E5%85%B5%E9%83%A8%E7%BD%B2%E6%96%87%E6%A1%A3/" class="title">redis哨兵部署</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2024-12-17T06:09:08.160Z" itemprop="datePublished">2024-12-17</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/Docker/">Docker</a>
+              </p>
+              <p class="item-title">
+                <a href="/2024/12/17/%E5%9B%BD%E4%BA%A7%E5%8C%96%E6%9C%8D%E5%8A%A1%E6%94%B9%E9%80%A0%E6%96%87%E6%A1%A3/" class="title">国产化服务改造文档（arm64）</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2024-12-17T06:01:35.525Z" itemprop="datePublished">2024-12-17</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/linux/">linux</a>
+              </p>
+              <p class="item-title">
+                <a href="/2024/12/17/ES%E6%BA%90%E7%A0%81%E9%83%A8%E7%BD%B2/" class="title">ES源码部署</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2024-12-17T05:57:00.960Z" itemprop="datePublished">2024-12-17</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/Docker/">Docker</a>
+              </p>
+              <p class="item-title">
+                <a href="/2024/12/17/go%E8%BF%9E%E6%8E%A5dm8%E6%95%B0%E6%8D%AE%E5%BA%93%E5%92%8C%E6%93%8D%E4%BD%9C%E7%A4%BA%E8%8C%83%E6%96%87%E6%A1%A3/" class="title">go连接dm8数据库和操作示范文档</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2024-12-17T05:54:45.689Z" itemprop="datePublished">2024-12-17</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/Docker/">Docker</a>
+              </p>
+              <p class="item-title">
+                <a href="/2024/12/17/docker%E9%83%A8%E7%BD%B2%E8%BE%BE%E6%A2%A6%E6%95%B0%E6%8D%AE%E5%BA%93/" class="title">docker部署达梦数据库文档</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2024-12-17T05:54:25.814Z" itemprop="datePublished">2024-12-17</time>
+              </p>
+            </div>
+          </li>
+          
+      </ul>
+    </div>
+  </div>
+  
+
+    
+  </div>
+</aside>
+
+  
+  
+  <aside class="sidebar sidebar-toc collapse   in  " id="collapseToc" itemscope itemtype="http://schema.org/WPSideBar">
+  <div class="slimContent">
+    <nav id="toc" class="article-toc">
+      <h3 class="toc-title">文章目录</h3>
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#go%E8%BF%9E%E6%8E%A5dm8%E6%95%B0%E6%8D%AE%E5%BA%93%E5%92%8C%E6%93%8D%E4%BD%9C%E7%A4%BA%E8%8C%83%E6%96%87%E6%A1%A3"><span class="toc-number">1.</span> <span class="toc-text"> go连接dm8数据库和操作示范文档</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1%E5%AE%89%E8%A3%85dm%E6%95%B0%E6%8D%AE%E5%BA%93"><span class="toc-number">1.0.1.</span> <span class="toc-text"> 1.安装DM数据库</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2%E5%AE%89%E8%A3%85dm%E9%A9%B1%E5%8A%A8%E5%8C%85"><span class="toc-number">1.0.2.</span> <span class="toc-text"> 2.安装DM驱动包</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3%E5%AE%89%E8%A3%85%E4%BE%9D%E8%B5%96%E5%8C%85"><span class="toc-number">1.0.3.</span> <span class="toc-text"> 3.安装依赖包</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4%E9%80%9A%E8%BF%87go%E5%AE%9E%E7%8E%B0%E8%BF%9E%E6%8E%A5%E5%92%8C%E6%93%8D%E4%BD%9Cdm%E6%95%B0%E6%8D%AE%E5%BA%93"><span class="toc-number">1.0.4.</span> <span class="toc-text"> 4.通过go实现连接和操作dm数据库</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#5%E9%80%9A%E8%BF%87dm%E7%AE%A1%E7%90%86%E5%B7%A5%E5%85%B7%E6%9F%A5%E7%9C%8B%E6%95%B0%E6%8D%AE"><span class="toc-number">1.0.5.</span> <span class="toc-text"> 5.通过DM管理工具查看数据</span></a></li></ol></li></ol></li></ol>
+    </nav>
+  </div>
+</aside>
+
+<main class="main" role="main">
+  <div class="content">
+  <article id="post-go连接dm8数据库和操作示范文档" class="article article-type-post" itemscope itemtype="http://schema.org/BlogPosting">
+    
+    <div class="article-header">
+      
+        
+  
+    <h1 class="article-title" itemprop="name">
+      go连接dm8数据库和操作示范文档
+    </h1>
+  
+
+      
+      <div class="article-meta">
+        <span class="article-date">
+    <i class="icon icon-calendar-check"></i>
+	<a href="/2024/12/17/go%E8%BF%9E%E6%8E%A5dm8%E6%95%B0%E6%8D%AE%E5%BA%93%E5%92%8C%E6%93%8D%E4%BD%9C%E7%A4%BA%E8%8C%83%E6%96%87%E6%A1%A3/" class="article-date">
+	  <time datetime="2024-12-17T05:54:45.689Z" itemprop="datePublished">2024-12-17</time>
+	</a>
+</span>
+        
+  <span class="article-category">
+    <i class="icon icon-folder"></i>
+    <a class="article-category-link" href="/categories/Docker/">Docker</a>
+  </span>
+
+        
+  <span class="article-tag">
+    <i class="icon icon-tags"></i>
+	<a class="article-tag-link-link" href="/tags/dm8/" rel="tag">dm8</a>
+  </span>
+
+
+        
+
+        <span class="post-comment"><i class="icon icon-comment"></i> <a href="/2024/12/17/go%E8%BF%9E%E6%8E%A5dm8%E6%95%B0%E6%8D%AE%E5%BA%93%E5%92%8C%E6%93%8D%E4%BD%9C%E7%A4%BA%E8%8C%83%E6%96%87%E6%A1%A3/#comments" class="article-comment-link">评论</a></span>
+        
+	
+		<span class="post-wordcount hidden-xs" itemprop="wordCount">字数统计: 1.2k(字)</span>
+	
+	
+		<span class="post-readcount hidden-xs" itemprop="timeRequired">阅读时长: 5(分)</span>
+	
+
+      </div>
+    </div>
+    <div class="article-entry marked-body" itemprop="articleBody">
+      
+        <h2 id="go连接dm8数据库和操作示范文档"><a class="markdownIt-Anchor" href="#go连接dm8数据库和操作示范文档"></a> go连接dm8数据库和操作示范文档</h2>
+<h4 id="1安装dm数据库"><a class="markdownIt-Anchor" href="#1安装dm数据库"></a> 1.安装DM数据库</h4>
+<p>请参考 <a target="_blank" rel="noopener" href="https://eco.dameng.com/document/dm/zh-cn/start/index">DM 数据库快速上手指南 </a>或者 <code>达梦数据库安装和使用文档.md</code></p>
+<p>数据库安装过程中，请勾选创建 <code>BOOKSHOP</code>，<code>DMHR</code> 示例库，作为数据库模拟环境，（勾选的目的是为了下面连接dm数据库进行增删改查操作作为示例，不然需要自行创建表和表数据）如下图所示：</p>
+<p><img src="/imgs/java-jdbc-dmhr.png" alt="DMHR 示例库" /></p>
+<h4 id="2安装dm驱动包"><a class="markdownIt-Anchor" href="#2安装dm驱动包"></a> 2.安装DM驱动包</h4>
+<p>将提供的 DM 驱动包放在 GOPATH 的 src 目录下。驱动包位于 DM数据库安装目录下：dmdbms/drivers/go/dm-go-driver.zip 解压到 GPPATH 安装路径的 src 下，如图所示：</p>
+<p><img src="/imgs/image-20221021154102867.png" alt="image-20221021154102867" /></p>
+<h4 id="3安装依赖包"><a class="markdownIt-Anchor" href="#3安装依赖包"></a> 3.安装依赖包</h4>
+<p>所需 Go 依赖包有两个，<code>text</code> 和 <code>snappy</code>，从 Git 上把依赖包 clone 到本地，进入到src目录下，右键【Git Bash Here】打开 Git 命令行窗口，依次下载 text 和 snappy 依赖。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">git clone https:<span class="comment">//github.com/golang/text.git  ./golang.org/x/text</span></span><br><span class="line"></span><br><span class="line">git clone https:<span class="comment">//github.com/golang/snappy  ./github.com/golang/snappy</span></span><br></pre></td></tr></table></figure>
+<p><img src="/imgs/image-20221021154442352.png" alt="image-20221021154442352" /></p>
+<h4 id="4通过go实现连接和操作dm数据库"><a class="markdownIt-Anchor" href="#4通过go实现连接和操作dm数据库"></a> 4.通过go实现连接和操作dm数据库</h4>
+<p>创建项目，项目结构树如下：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">.</span><br><span class="line">├── bin</span><br><span class="line">└── src</span><br><span class="line">    ├── dm    		<span class="comment">// dm驱动包</span></span><br><span class="line">    ├── github.com  <span class="comment">// 依赖包</span></span><br><span class="line">    ├── golang.org	<span class="comment">// 依赖包</span></span><br><span class="line">	└── demo  		<span class="comment">// 项目</span></span><br><span class="line">		├── main.<span class="keyword">go</span> <span class="comment">// 主函数入口</span></span><br><span class="line">		├── <span class="keyword">go</span>.mod  </span><br><span class="line">		└── <span class="keyword">go</span>.sum</span><br></pre></td></tr></table></figure>
+<p>main.go文件如下：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*该例程实现插入数据，修改数据，删除数据，数据查询等基本操作。*/</span></span><br><span class="line"><span class="keyword">package</span> main</span><br><span class="line"><span class="comment">// 引入相关包</span></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line"><span class="string">&quot;database/sql&quot;</span></span><br><span class="line"><span class="string">&quot;dm&quot;</span></span><br><span class="line"><span class="string">&quot;fmt&quot;</span></span><br><span class="line"><span class="string">&quot;io/ioutil&quot;</span></span><br><span class="line"><span class="string">&quot;time&quot;</span></span><br><span class="line">)</span><br><span class="line"><span class="keyword">var</span> db *sql.DB</span><br><span class="line"><span class="keyword">var</span> err <span class="type">error</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	driverName := <span class="string">&quot;dm&quot;</span></span><br><span class="line">	dataSourceName := <span class="string">&quot;dm://SYSDBA:SYSDBA@localhost:5236&quot;</span></span><br><span class="line">	<span class="keyword">if</span> db, err = connect(driverName, dataSourceName); err != <span class="literal">nil</span> &#123;</span><br><span class="line">		fmt.Println(err)</span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> err = insertTable(); err != <span class="literal">nil</span> &#123;</span><br><span class="line">		fmt.Println(err)</span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> err = updateTable(); err != <span class="literal">nil</span> &#123;</span><br><span class="line">		fmt.Println(err)</span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> err = queryTable(); err != <span class="literal">nil</span> &#123;</span><br><span class="line">		fmt.Println(err)</span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> err = deleteTable(); err != <span class="literal">nil</span> &#123;</span><br><span class="line">		fmt.Println(err)</span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> err = disconnect(); err != <span class="literal">nil</span> &#123;</span><br><span class="line">		fmt.Println(err)</span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/* 创建数据库连接 */</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">connect</span><span class="params">(driverName <span class="type">string</span>, dataSourceName <span class="type">string</span>)</span></span> (*sql.DB, <span class="type">error</span>) &#123;</span><br><span class="line">	<span class="keyword">var</span> db *sql.DB</span><br><span class="line">	<span class="keyword">var</span> err <span class="type">error</span></span><br><span class="line">	<span class="keyword">if</span> db, err = sql.Open(driverName, dataSourceName); err != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">nil</span>, err</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> err = db.Ping(); err != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">nil</span>, err</span><br><span class="line">	&#125;</span><br><span class="line">	fmt.Printf(<span class="string">&quot;connect to \&quot;%s\&quot; succeed.\n&quot;</span>, dataSourceName)</span><br><span class="line">	<span class="keyword">return</span> db, <span class="literal">nil</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/* 往产品信息表插入数据 */</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">insertTable</span><span class="params">()</span></span> <span class="type">error</span> &#123;</span><br><span class="line">	<span class="keyword">var</span> inFileName = <span class="string">&quot;D:\\java\\vagrant\\data\\gopath\\src\\demo\\2022\\20221020\\data\\1.png&quot;</span></span><br><span class="line">	<span class="keyword">var</span> sql = <span class="string">`INSERT INTO production.product(name,author,publisher,publishtime,</span></span><br><span class="line"><span class="string">product_subcategoryid,productno,satetystocklevel,originalprice,nowprice,discount,</span></span><br><span class="line"><span class="string">description,photo,type,papertotal,wordtotal,sellstarttime,sellendtime)</span></span><br><span class="line"><span class="string">VALUES(:1,:2,:3,:4,:5,:6,:7,:8,:9,:10,:11,:12,:13,:14,:15,:16,:17);`</span></span><br><span class="line">	data, err := ioutil.ReadFile(inFileName)</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> err</span><br><span class="line">	&#125;</span><br><span class="line">	t1, _ := time.Parse(<span class="string">&quot;2006-Jan-02&quot;</span>, <span class="string">&quot;2005-Apr-01&quot;</span>)</span><br><span class="line">	t2, _ := time.Parse(<span class="string">&quot;2006-Jan-02&quot;</span>, <span class="string">&quot;2006-Mar-20&quot;</span>)</span><br><span class="line">	t3, _ := time.Parse(<span class="string">&quot;2006-Jan-02&quot;</span>, <span class="string">&quot;1900-Jan-01&quot;</span>)</span><br><span class="line">	_, err = db.Exec(sql, <span class="string">&quot;三国演义&quot;</span>, <span class="string">&quot;罗贯中&quot;</span>, <span class="string">&quot;中华书局&quot;</span>, t1, <span class="number">4</span>, <span class="string">&quot;9787101046126&quot;</span>, <span class="number">10</span>, <span class="number">19.0000</span>, <span class="number">15.2000</span>,</span><br><span class="line">		<span class="number">8.0</span>,</span><br><span class="line">		<span class="string">&quot;《三国演义》是中国第一部长篇章回体小说，中国小说由短篇发展至长篇的原因与说书有关。&quot;</span>,</span><br><span class="line">		data, <span class="string">&quot;25&quot;</span>, <span class="number">943</span>, <span class="number">93000</span>, t2, t3)</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> err</span><br><span class="line">	&#125;</span><br><span class="line">	fmt.Println(<span class="string">&quot;insertTable succeed&quot;</span>)</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">nil</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/* 修改产品信息表数据 */</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">updateTable</span><span class="params">()</span></span> <span class="type">error</span> &#123;</span><br><span class="line">	<span class="keyword">var</span> sql = <span class="string">&quot;UPDATE production.product SET name = :name WHERE productid = 11;&quot;</span></span><br><span class="line">	<span class="keyword">if</span> _, err := db.Exec(sql, <span class="string">&quot;三国演义（上）&quot;</span>); err != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> err</span><br><span class="line">	&#125;</span><br><span class="line">	fmt.Println(<span class="string">&quot;updateTable succeed&quot;</span>)</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">nil</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/* 查询产品信息表 */</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">queryTable</span><span class="params">()</span></span> <span class="type">error</span> &#123;</span><br><span class="line">	<span class="keyword">var</span> productid <span class="type">int</span></span><br><span class="line">	<span class="keyword">var</span> name <span class="type">string</span></span><br><span class="line">	<span class="keyword">var</span> author <span class="type">string</span></span><br><span class="line">	<span class="keyword">var</span> description dm.DmClob</span><br><span class="line">	<span class="keyword">var</span> photo dm.DmBlob</span><br><span class="line">	<span class="keyword">var</span> sql = <span class="string">&quot;SELECT productid,name,author,description,photo FROM production.product WHERE productid=11&quot;</span></span><br><span class="line">	rows, err := db.Query(sql)</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> err</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">defer</span> rows.Close()</span><br><span class="line">	fmt.Println(<span class="string">&quot;queryTable results:&quot;</span>)</span><br><span class="line">	<span class="keyword">for</span> rows.Next() &#123;</span><br><span class="line">		<span class="keyword">if</span> err = rows.Scan(&amp;productid, &amp;name, &amp;author, &amp;description, &amp;photo); err != <span class="literal">nil</span> &#123;</span><br><span class="line">			<span class="keyword">return</span> err</span><br><span class="line">		&#125;</span><br><span class="line">		blobLen, _ := photo.GetLength()</span><br><span class="line">		fmt.Printf(<span class="string">&quot;%v %v %v %v %v\n&quot;</span>, productid, name, author, description, blobLen)</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">nil</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/* 删除产品信息表数据 */</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">deleteTable</span><span class="params">()</span></span> <span class="type">error</span> &#123;</span><br><span class="line">	<span class="keyword">var</span> sql = <span class="string">&quot;DELETE FROM production.product WHERE productid = 12;&quot;</span></span><br><span class="line">	<span class="keyword">if</span> _, err := db.Exec(sql); err != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> err</span><br><span class="line">	&#125;</span><br><span class="line">	fmt.Println(<span class="string">&quot;deleteTable succeed&quot;</span>)</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">nil</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/* 关闭数据库连接 */</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">disconnect</span><span class="params">()</span></span> <span class="type">error</span> &#123;</span><br><span class="line">	<span class="keyword">if</span> err := db.Close(); err != <span class="literal">nil</span> &#123;</span><br><span class="line">		fmt.Printf(<span class="string">&quot;db close failed: %s.\n&quot;</span>, err)</span><br><span class="line">		<span class="keyword">return</span> err</span><br><span class="line">	&#125;</span><br><span class="line">	fmt.Println(<span class="string">&quot;disconnect succeed&quot;</span>)</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">nil</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p><strong>注意</strong></p>
+<p><code>insertTable()</code>接口中<code>inFileName</code>字段是图片路径，需要自行再相应目录下插入图片，并修改路径。</p>
+<p>然后需要引用项目需要的以来增加到<code>go.mod</code>文件中，执行：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">go</span> mod tidy</span><br></pre></td></tr></table></figure>
+<p>执行完，会发现<code>import</code>引入相关包中<code>dm</code>包是爆红的，需要手动加入到<code>go.mod replace</code>中</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">replace (</span><br><span class="line">	dm =&gt; ../dm</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+<p>然后就可以执行<code>main</code>函数了，执行结果如下：</p>
+<p><img src="/imgs/image-20221021155845102.png" alt="image-20221021155845102" /></p>
+<h4 id="5通过dm管理工具查看数据"><a class="markdownIt-Anchor" href="#5通过dm管理工具查看数据"></a> 5.通过DM管理工具查看数据</h4>
+<p>上图执行<code>main</code>函数成功后，可打开<code>DM管理工具</code>（需要管理员权限），连接DM数据库，找到表查看数据是否插入成功</p>
+<p><img src="/imgs/image-20221021160404240.png" alt="image-20221021160404240" /></p>
+<p>或者通过sql语句来查看表中数据：</p>
+<p><img src="/imgs/image-20221021160602890.png" alt="image-20221021160602890" /></p>
+<p>参考文档<a target="_blank" rel="noopener" href="https://eco.dameng.com/document/dm/zh-cn/app-dev/go-go.html">Go 数据库接口</a></p>
+
+      
+    </div>
+    <div class="article-footer">
+      <blockquote class="mt-2x">
+  <ul class="post-copyright list-unstyled">
+    
+    <li class="post-copyright-link hidden-xs">
+      <strong>本文链接：</strong>
+      <a href="https://www.yanwq.com/2024/12/17/go%E8%BF%9E%E6%8E%A5dm8%E6%95%B0%E6%8D%AE%E5%BA%93%E5%92%8C%E6%93%8D%E4%BD%9C%E7%A4%BA%E8%8C%83%E6%96%87%E6%A1%A3/" title="go连接dm8数据库和操作示范文档" target="_blank" rel="external">https://www.yanwq.com/2024/12/17/go连接dm8数据库和操作示范文档/</a>
+    </li>
+    
+    <li class="post-copyright-license">
+      <strong>版权声明： </strong> 本博客所有文章除特别声明外，均采用 <a href="http://creativecommons.org/licenses/by/4.0/deed.zh" target="_blank" rel="external">CC BY 4.0 CN协议</a> 许可协议。转载请注明出处！
+    </li>
+  </ul>
+</blockquote>
+
+
+<div class="panel panel-default panel-badger">
+  <div class="panel-body">
+    <figure class="media">
+      <div class="media-left">
+        <a href="https://github.com/ywq0811" target="_blank" class="img-burn thumb-sm visible-lg">
+          <img src="/images/avatar.jpg" class="img-rounded w-full" alt="">
+        </a>
+      </div>
+      <div class="media-body">
+        <h3 class="media-heading"><a href="https://github.com/ywq0811" target="_blank"><span class="text-dark">yanwq</span><small class="ml-1x">Go Developer</small></a></h3>
+        <div>个人简介。</div>
+      </div>
+    </figure>
+  </div>
+</div>
+
+
+    </div>
+  </article>
+  
+    
+  <section id="comments">
+  	
+
+    
+  </section>
+
+
+  
+</div>
+
+  <nav class="bar bar-footer clearfix" data-stick-bottom>
+  <div class="bar-inner">
+  
+  <ul class="pager pull-left">
+    
+    <li class="prev">
+      <a href="/2024/12/17/ES%E6%BA%90%E7%A0%81%E9%83%A8%E7%BD%B2/" title="ES源码部署"><i class="icon icon-angle-left" aria-hidden="true"></i><span>&nbsp;&nbsp;上一篇</span></a>
+    </li>
+    
+    
+    <li class="next">
+      <a href="/2024/12/17/docker%E9%83%A8%E7%BD%B2%E8%BE%BE%E6%A2%A6%E6%95%B0%E6%8D%AE%E5%BA%93/" title="docker部署达梦数据库文档"><span>下一篇&nbsp;&nbsp;</span><i class="icon icon-angle-right" aria-hidden="true"></i></a>
+    </li>
+    
+    
+    <li class="toggle-toc">
+      <a class="toggle-btn " data-toggle="collapse" href="#collapseToc" aria-expanded="false" title="文章目录" role="button">    <span>[&nbsp;</span><span>文章目录</span>
+        <i class="text-collapsed icon icon-anchor"></i>
+        <i class="text-in icon icon-close"></i>
+        <span>]</span>
+      </a>
+    </li>
+    
+  </ul>
+  
+  
+  
+  <div class="bar-right">
+    
+  </div>
+  </div>
+</nav>
+  
+
+
+</main>
+
+  <footer class="footer" itemscope itemtype="http://schema.org/WPFooter">
+	
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/ywq0811" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+    </ul>
+
+    <div class="copyright">
+    	
+        <div class="publishby">
+        	Theme by <a href="https://github.com/cofess" target="_blank"> cofess </a>base on <a href="https://github.com/cofess/hexo-theme-pure" target="_blank">pure</a>.
+        </div>
+    </div>
+</footer>
+  <script src="//cdn.jsdelivr.net/npm/jquery@1.12.4/dist/jquery.min.js"></script>
+<script>
+window.jQuery || document.write('<script src="js/jquery.min.js"><\/script>')
+</script>
+
+<script src="/js/plugin.min.js"></script>
+
+
+<script src="/js/application.js"></script>
+
+
+    <script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(未命名)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+
+<script src="/js/insight.js"></script>
+
+
+
+
+
+
+   
+
+
+
+
+   
+    
+<script src="//cdn.jsdelivr.net/npm/gitment@0.0.3/dist/gitment.browser.min.js"></script>
+<script>
+var gitment = new Gitment({
+  // id默认为当前页面url，如果url后带参数或锚点，gitment要重新初始化
+  // https://github.com/imsun/gitment/issues/55
+  // 解决方案：id:window.location.pathname,或者将id设置为当前页面标题
+  id: 'go连接dm8数据库和操作示范文档', 
+  owner: '', // 可以是你的GitHub用户名，也可以是github id
+  repo: '',
+  oauth: {
+    client_id: '',
+    client_secret: '',
+  }
+})
+gitment.render('comments')
+</script>
+
+
+
+
+
+
+
+
+
+</body>
+</html>

@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+  <meta charset="utf-8">
+  
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="Cache-Control" content="no-transform" />
+  <meta http-equiv="Cache-Control" content="no-siteapp" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="format-detection" content="telephone=no,email=no,adress=no">
+  <!-- Color theme for statusbar -->
+  <meta name="theme-color" content="#000000" />
+  <!-- 强制页面在当前窗口以独立页面显示,防止别人在框架里调用页面 -->
+  <meta http-equiv="window-target" content="_top" />
+  
+  
+  <title>redis哨兵部署 | yanwq</title>
+  <meta name="description" content="各redis的ip和端口如下： 主(redis-mater)：192.168.26.75:16379 从(redis-slaveof)：192.168.26.73:6380 三哨兵：(sentinel-26379)：192.168.73:26379 ​				(sentinel-26380)：192.168.74:26380 ​				(sentinel-26381)：192.168.75:26">
+<meta property="og:type" content="article">
+<meta property="og:title" content="redis哨兵部署">
+<meta property="og:url" content="https://www.yanwq.com/2024/12/17/kvpl-redis%E4%B8%80%E4%B8%BB%E4%B8%89%E4%BB%8E%E4%B8%89%E5%93%A8%E5%85%B5%E9%83%A8%E7%BD%B2%E6%96%87%E6%A1%A3/index.html">
+<meta property="og:site_name" content="yanwq">
+<meta property="og:description" content="各redis的ip和端口如下： 主(redis-mater)：192.168.26.75:16379 从(redis-slaveof)：192.168.26.73:6380 三哨兵：(sentinel-26379)：192.168.73:26379 ​				(sentinel-26380)：192.168.74:26380 ​				(sentinel-26381)：192.168.75:26">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://www.yanwq.com/imgs/image-20241217140514682.png">
+<meta property="og:image" content="https://www.yanwq.com/imgs/image-20241217140713740.png">
+<meta property="og:image" content="https://www.yanwq.com/imgs/image-20241217140741040.png">
+<meta property="og:image" content="https://www.yanwq.com/imgs/image-20241217140801380.png">
+<meta property="og:image" content="https://www.yanwq.com/imgs/image-20241217140829467.png">
+<meta property="og:image" content="https://www.yanwq.com/imgs/image-20241217140839081.png">
+<meta property="og:image" content="https://www.yanwq.com/imgs/image-20241217140846971.png">
+<meta property="article:published_time" content="2024-12-17T06:09:08.160Z">
+<meta property="article:modified_time" content="2024-12-17T06:23:46.339Z">
+<meta property="article:author" content="yanwq">
+<meta property="article:tag" content="redis">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://www.yanwq.com/imgs/image-20241217140514682.png">
+  <!-- Canonical links -->
+  <link rel="canonical" href="https://www.yanwq.com/2024/12/17/kvpl-redis%E4%B8%80%E4%B8%BB%E4%B8%89%E4%BB%8E%E4%B8%89%E5%93%A8%E5%85%B5%E9%83%A8%E7%BD%B2%E6%96%87%E6%A1%A3/index.html">
+  
+    <link rel="alternate" href="/atom.xml" title="yanwq" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+  
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitment@0.0.3/style/default.min.css">
+  
+  
+  
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?b839d137c29d9b42d962e7accfbb17ce";
+  var s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body class="main-center theme-black" itemscope itemtype="http://schema.org/WebPage">
+  <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+  <div class="slimContent">
+    <div class="navbar-header">
+      
+      
+      <div class="profile-block text-center">
+        <a id="avatar" href="https://github.com/ywq0811" target="_blank">
+          <img class="img-circle img-rotate" src="/images/avatar.jpg" width="200" height="200">
+        </a>
+        <h2 id="name" class="hidden-xs hidden-sm">yanwq</h2>
+        <h3 id="title" class="hidden-xs hidden-sm hidden-md">Go Developer</h3>
+        <small id="location" class="text-muted hidden-xs hidden-sm"><i class="icon icon-map-marker"></i> Xiamen, China</small>
+      </div>
+      
+      <div class="search" id="search-form-wrap">
+
+    <form class="search-form sidebar-form">
+        <div class="input-group">
+            <input type="text" class="search-form-input form-control" placeholder="搜索" />
+            <span class="input-group-btn">
+                <button type="submit" class="search-form-submit btn btn-flat" onclick="return false;"><i class="icon icon-search"></i></button>
+            </span>
+        </div>
+    </form>
+    <div class="ins-search">
+  <div class="ins-search-mask"></div>
+  <div class="ins-search-container">
+    <div class="ins-input-wrapper">
+      <input type="text" class="ins-search-input" placeholder="想要查找什么..." x-webkit-speech />
+      <button type="button" class="close ins-close ins-selectable" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+    </div>
+    <div class="ins-section-wrapper">
+      <div class="ins-section-container"></div>
+    </div>
+  </div>
+</div>
+
+
+</div>
+      <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#main-navbar" aria-controls="main-navbar" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <nav id="main-navbar" class="collapse navbar-collapse" itemscope itemtype="http://schema.org/SiteNavigationElement" role="navigation">
+      <ul class="nav navbar-nav main-nav ">
+        
+        
+        <li class="menu-item menu-item-home">
+          <a href="/.">
+            
+            <i class="icon icon-home-fill"></i>
+            
+            <span class="menu-title">首页</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives">
+            
+            <i class="icon icon-archives-fill"></i>
+            
+            <span class="menu-title">归档</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories">
+            
+            <i class="icon icon-folder"></i>
+            
+            <span class="menu-title">分类</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags">
+            
+            <i class="icon icon-tags"></i>
+            
+            <span class="menu-title">标签</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-repository">
+          <a href="/repository">
+            
+            <i class="icon icon-project"></i>
+            
+            <span class="menu-title">项目</span>
+          </a>
+        </li>
+        
+      </ul>
+      
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/ywq0811" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+    </ul>
+
+    </nav>
+  </div>
+</header>
+
+  
+    <aside class="sidebar" itemscope itemtype="http://schema.org/WPSideBar">
+  <div class="slimContent">
+    
+      <div class="widget">
+    <h3 class="widget-title">公告</h3>
+    <div class="widget-body">
+        <div id="board">
+            <div class="content">
+                <p>欢迎交流与分享经验!</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">分类</h3>
+    <div class="widget-body">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/DB/">DB</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Docker/">Docker</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Git/">Git</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Go/">Go</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Proto/">Proto</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Ubuntu/">Ubuntu</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Windows/">Windows</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/linux/">linux</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/linux-arm64-%E9%B2%B2%E9%B9%8F/">linux/arm64 鲲鹏</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/windows/">windows</a><span class="category-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget-body">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/WinSW/" rel="tag">WinSW</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/arm64/" rel="tag">arm64</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/consul/" rel="tag">consul</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cron/" rel="tag">cron</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/db/" rel="tag">db</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dm8/" rel="tag">dm8</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/" rel="tag">docker</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/es%E6%95%B0%E6%8D%AE%E5%BA%93/" rel="tag">es数据库</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ffmpeg/" rel="tag">ffmpeg</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/git/" rel="tag">git</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/go/" rel="tag">go</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/go-zero/" rel="tag">go-zero</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/gorm/" rel="tag">gorm</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/grafana/" rel="tag">grafana</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/https/" rel="tag">https</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/linux/" rel="tag">linux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/" rel="tag">mysql</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/nginx/" rel="tag">nginx</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/node/" rel="tag">node</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/oracle/" rel="tag">oracle</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/proto/" rel="tag">proto</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rabbitMQ/" rel="tag">rabbitMQ</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/redis/" rel="tag">redis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sqlite/" rel="tag">sqlite</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ubuntu/" rel="tag">ubuntu</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vue/" rel="tag">vue</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/wrk/" rel="tag">wrk</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/wsl2/" rel="tag">wsl2</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%BE%BE%E6%A2%A6%E6%95%B0%E6%8D%AE%E5%BA%93/" rel="tag">达梦数据库</a><span class="tag-list-count">2</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签云</h3>
+    <div class="widget-body tagcloud">
+      <a href="/tags/WinSW/" style="font-size: 13px;">WinSW</a> <a href="/tags/arm64/" style="font-size: 13px;">arm64</a> <a href="/tags/consul/" style="font-size: 14px;">consul</a> <a href="/tags/cron/" style="font-size: 13px;">cron</a> <a href="/tags/db/" style="font-size: 13px;">db</a> <a href="/tags/dm8/" style="font-size: 13.33px;">dm8</a> <a href="/tags/docker/" style="font-size: 13.67px;">docker</a> <a href="/tags/es%E6%95%B0%E6%8D%AE%E5%BA%93/" style="font-size: 13px;">es数据库</a> <a href="/tags/ffmpeg/" style="font-size: 13px;">ffmpeg</a> <a href="/tags/git/" style="font-size: 13px;">git</a> <a href="/tags/go/" style="font-size: 13.33px;">go</a> <a href="/tags/go-zero/" style="font-size: 13.33px;">go-zero</a> <a href="/tags/gorm/" style="font-size: 13px;">gorm</a> <a href="/tags/grafana/" style="font-size: 13.33px;">grafana</a> <a href="/tags/https/" style="font-size: 13px;">https</a> <a href="/tags/linux/" style="font-size: 13px;">linux</a> <a href="/tags/mysql/" style="font-size: 13.67px;">mysql</a> <a href="/tags/nginx/" style="font-size: 13.33px;">nginx</a> <a href="/tags/node/" style="font-size: 13.33px;">node</a> <a href="/tags/oracle/" style="font-size: 13px;">oracle</a> <a href="/tags/proto/" style="font-size: 13px;">proto</a> <a href="/tags/rabbitMQ/" style="font-size: 13px;">rabbitMQ</a> <a href="/tags/redis/" style="font-size: 13px;">redis</a> <a href="/tags/sqlite/" style="font-size: 13px;">sqlite</a> <a href="/tags/ubuntu/" style="font-size: 13px;">ubuntu</a> <a href="/tags/vue/" style="font-size: 13px;">vue</a> <a href="/tags/wrk/" style="font-size: 13px;">wrk</a> <a href="/tags/wsl2/" style="font-size: 13px;">wsl2</a> <a href="/tags/%E8%BE%BE%E6%A2%A6%E6%95%B0%E6%8D%AE%E5%BA%93/" style="font-size: 13.33px;">达梦数据库</a>
+    </div>
+  </div>
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget-body">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/12/">十二月 2024</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/11/">十一月 2024</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/10/">十月 2024</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/07/">七月 2024</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/04/">四月 2024</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/03/">三月 2024</a><span class="archive-list-count">21</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/06/">六月 2023</a><span class="archive-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget-body">
+      <ul class="recent-post-list list-unstyled no-thumbnail">
+        
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/Docker/">Docker</a>
+              </p>
+              <p class="item-title">
+                <a href="/2024/12/17/kvpl-redis%E4%B8%80%E4%B8%BB%E4%B8%89%E4%BB%8E%E4%B8%89%E5%93%A8%E5%85%B5%E9%83%A8%E7%BD%B2%E6%96%87%E6%A1%A3/" class="title">redis哨兵部署</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2024-12-17T06:09:08.160Z" itemprop="datePublished">2024-12-17</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/Docker/">Docker</a>
+              </p>
+              <p class="item-title">
+                <a href="/2024/12/17/%E5%9B%BD%E4%BA%A7%E5%8C%96%E6%9C%8D%E5%8A%A1%E6%94%B9%E9%80%A0%E6%96%87%E6%A1%A3/" class="title">国产化服务改造文档（arm64）</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2024-12-17T06:01:35.525Z" itemprop="datePublished">2024-12-17</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/linux/">linux</a>
+              </p>
+              <p class="item-title">
+                <a href="/2024/12/17/ES%E6%BA%90%E7%A0%81%E9%83%A8%E7%BD%B2/" class="title">ES源码部署</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2024-12-17T05:57:00.960Z" itemprop="datePublished">2024-12-17</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/Docker/">Docker</a>
+              </p>
+              <p class="item-title">
+                <a href="/2024/12/17/go%E8%BF%9E%E6%8E%A5dm8%E6%95%B0%E6%8D%AE%E5%BA%93%E5%92%8C%E6%93%8D%E4%BD%9C%E7%A4%BA%E8%8C%83%E6%96%87%E6%A1%A3/" class="title">go连接dm8数据库和操作示范文档</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2024-12-17T05:54:45.689Z" itemprop="datePublished">2024-12-17</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/Docker/">Docker</a>
+              </p>
+              <p class="item-title">
+                <a href="/2024/12/17/docker%E9%83%A8%E7%BD%B2%E8%BE%BE%E6%A2%A6%E6%95%B0%E6%8D%AE%E5%BA%93/" class="title">docker部署达梦数据库文档</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2024-12-17T05:54:25.814Z" itemprop="datePublished">2024-12-17</time>
+              </p>
+            </div>
+          </li>
+          
+      </ul>
+    </div>
+  </div>
+  
+
+    
+  </div>
+</aside>
+
+  
+  
+  <aside class="sidebar sidebar-toc collapse   in  " id="collapseToc" itemscope itemtype="http://schema.org/WPSideBar">
+  <div class="slimContent">
+    <nav id="toc" class="article-toc">
+      <h3 class="toc-title">文章目录</h3>
+      <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%90%84redis%E7%9A%84ip%E5%92%8C%E7%AB%AF%E5%8F%A3%E5%A6%82%E4%B8%8B"><span class="toc-number">1.</span> <span class="toc-text"> 各redis的ip和端口如下：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#docker%E9%83%A8%E7%BD%B2%E6%B5%81%E7%A8%8B"><span class="toc-number">2.</span> <span class="toc-text"> docker部署流程：</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%B8%8B%E8%BD%BDredis%E9%95%9C%E5%83%8F"><span class="toc-number">2.1.</span> <span class="toc-text"> 下载redis镜像</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%88%9B%E5%BB%BA%E4%B8%BBdata%E6%96%87%E4%BB%B6%E5%A4%B9"><span class="toc-number">2.2.</span> <span class="toc-text"> 创建主data文件夹</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#docker%E8%BF%90%E8%A1%8C%E4%B8%BBredis"><span class="toc-number">2.3.</span> <span class="toc-text"> docker运行主redis</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%88%9B%E5%BB%BA%E4%BB%8Edata1%E6%96%87%E4%BB%B6%E5%A4%B9"><span class="toc-number">2.4.</span> <span class="toc-text"> 创建从data1文件夹</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#docker%E8%BF%90%E8%A1%8C%E4%BB%8Eredis"><span class="toc-number">2.5.</span> <span class="toc-text"> docker运行从redis</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%9F%A5%E7%9C%8B%E9%9B%86%E7%BE%A4%E6%98%AF%E5%90%A6%E6%88%90%E5%8A%9F"><span class="toc-number">2.6.</span> <span class="toc-text"> 查看集群是否成功</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%88%9B%E5%BB%BA%E5%93%A8%E5%85%B5%E9%85%8D%E7%BD%AE"><span class="toc-number">2.7.</span> <span class="toc-text"> 创建哨兵配置</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#sentinel-26379"><span class="toc-number">2.7.1.</span> <span class="toc-text"> sentinel-26379</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#cd-sentinel-26379conf-%E9%85%8D%E7%BD%AE%E5%86%85%E5%AE%B9%E5%A6%82%E4%B8%8B"><span class="toc-number">2.7.2.</span> <span class="toc-text"> cd sentinel-263.79.conf 配置内容如下：</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#sentinel-26380"><span class="toc-number">2.7.3.</span> <span class="toc-text"> sentinel-26380</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#cd-sentinel-26380conf-%E9%85%8D%E7%BD%AE%E5%86%85%E5%AE%B9%E5%A6%82%E4%B8%8B"><span class="toc-number">2.7.4.</span> <span class="toc-text"> cd sentinel-263.80.conf 配置内容如下：</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#sentinel-26381"><span class="toc-number">2.7.5.</span> <span class="toc-text"> sentinel-26381</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#cd-sentinel-26381conf-%E9%85%8D%E7%BD%AE%E5%86%85%E5%AE%B9%E5%A6%82%E4%B8%8B"><span class="toc-number">2.7.6.</span> <span class="toc-text"> cd sentinel-263.81.conf 配置内容如下：</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#docker%E8%BF%90%E8%A1%8C%E5%93%A8%E5%85%B5"><span class="toc-number">2.8.</span> <span class="toc-text"> docker运行哨兵</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%93%A8%E5%85%B5sentinel-26379"><span class="toc-number">2.8.1.</span> <span class="toc-text"> 哨兵sentinel-26379</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E6%9F%A5%E7%9C%8B%E6%97%A5%E5%BF%97"><span class="toc-number">2.8.2.</span> <span class="toc-text"> 查看日志</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%93%A8%E5%85%B5sentinel-26380"><span class="toc-number">2.8.3.</span> <span class="toc-text"> 哨兵sentinel-26380</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E6%9F%A5%E7%9C%8B%E6%97%A5%E5%BF%97-2"><span class="toc-number">2.8.4.</span> <span class="toc-text"> 查看日志</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%93%A8%E5%85%B5sentinel-26381"><span class="toc-number">2.8.5.</span> <span class="toc-text"> 哨兵sentinel-26381</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E6%9F%A5%E7%9C%8B%E6%97%A5%E5%BF%97-3"><span class="toc-number">2.8.6.</span> <span class="toc-text"> 查看日志</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%9F%A5%E7%9C%8B%E9%9B%86%E7%BE%A4%E5%93%A8%E5%85%B5%E6%98%AF%E5%90%A6%E6%88%90%E5%8A%9F"><span class="toc-number">2.9.</span> <span class="toc-text"> 查看集群+哨兵是否成功</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E8%BF%9B%E5%85%A5%E4%B8%BBredis%E4%B8%AD%E6%89%A7%E8%A1%8C"><span class="toc-number">2.9.1.</span> <span class="toc-text"> 进入主redis中执行</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E8%BF%9B%E5%85%A5%E4%BB%8Eredis%E4%B8%AD%E6%9F%A5%E7%9C%8B"><span class="toc-number">2.9.2.</span> <span class="toc-text"> 进入从redis中查看</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%81%9C%E6%8E%89%E4%B8%BBredis%E6%9C%8D%E5%8A%A1%E6%89%93%E5%BC%803%E4%B8%AA%E4%BC%9A%E8%AF%9D%E6%9F%A5%E7%9C%8B%E5%93%A8%E5%85%B5%E6%97%A5%E5%BF%97"><span class="toc-number">2.9.3.</span> <span class="toc-text"> 停掉主redis服务,打开3个会话查看哨兵日志</span></a></li></ol></li></ol></li></ol>
+    </nav>
+  </div>
+</aside>
+
+<main class="main" role="main">
+  <div class="content">
+  <article id="post-kvpl-redis一主三从三哨兵部署文档" class="article article-type-post" itemscope itemtype="http://schema.org/BlogPosting">
+    
+    <div class="article-header">
+      
+        
+  
+    <h1 class="article-title" itemprop="name">
+      redis哨兵部署
+    </h1>
+  
+
+      
+      <div class="article-meta">
+        <span class="article-date">
+    <i class="icon icon-calendar-check"></i>
+	<a href="/2024/12/17/kvpl-redis%E4%B8%80%E4%B8%BB%E4%B8%89%E4%BB%8E%E4%B8%89%E5%93%A8%E5%85%B5%E9%83%A8%E7%BD%B2%E6%96%87%E6%A1%A3/" class="article-date">
+	  <time datetime="2024-12-17T06:09:08.160Z" itemprop="datePublished">2024-12-17</time>
+	</a>
+</span>
+        
+  <span class="article-category">
+    <i class="icon icon-folder"></i>
+    <a class="article-category-link" href="/categories/Docker/">Docker</a>
+  </span>
+
+        
+  <span class="article-tag">
+    <i class="icon icon-tags"></i>
+	<a class="article-tag-link-link" href="/tags/redis/" rel="tag">redis</a>
+  </span>
+
+
+        
+
+        <span class="post-comment"><i class="icon icon-comment"></i> <a href="/2024/12/17/kvpl-redis%E4%B8%80%E4%B8%BB%E4%B8%89%E4%BB%8E%E4%B8%89%E5%93%A8%E5%85%B5%E9%83%A8%E7%BD%B2%E6%96%87%E6%A1%A3/#comments" class="article-comment-link">评论</a></span>
+        
+	
+		<span class="post-wordcount hidden-xs" itemprop="wordCount">字数统计: 603(字)</span>
+	
+	
+		<span class="post-readcount hidden-xs" itemprop="timeRequired">阅读时长: 3(分)</span>
+	
+
+      </div>
+    </div>
+    <div class="article-entry marked-body" itemprop="articleBody">
+      
+        <h3 id="各redis的ip和端口如下"><a class="markdownIt-Anchor" href="#各redis的ip和端口如下"></a> 各redis的ip和端口如下：</h3>
+<p>主(redis-mater)：192.168.26.75:16379</p>
+<p>从(redis-slaveof)：192.168.26.73:6380</p>
+<p>三哨兵：(sentinel-26379)：192.168.73:26379</p>
+<p>​				(sentinel-26380)：192.168.74:26380</p>
+<p>​				(sentinel-26381)：192.168.75:26381</p>
+<h3 id="docker部署流程"><a class="markdownIt-Anchor" href="#docker部署流程"></a> docker部署流程：</h3>
+<h4 id="下载redis镜像"><a class="markdownIt-Anchor" href="#下载redis镜像"></a> 下载redis镜像</h4>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker pull redis:5.0.9</span><br></pre></td></tr></table></figure>
+<h4 id="创建主data文件夹"><a class="markdownIt-Anchor" href="#创建主data文件夹"></a> 创建主data文件夹</h4>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mkdir /home/yanwq/docker_data/redis/redis_data/data</span><br></pre></td></tr></table></figure>
+<h4 id="docker运行主redis"><a class="markdownIt-Anchor" href="#docker运行主redis"></a> docker运行主redis</h4>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run --name redis-master --net=host -v /home/yanwq/docker_data/redis/redis_data1/data:/data -d redis:5.0.9 redis-server --port 16379</span><br></pre></td></tr></table></figure>
+<h4 id="创建从data1文件夹"><a class="markdownIt-Anchor" href="#创建从data1文件夹"></a> 创建从data1文件夹</h4>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mkdir /home/yanwq/docker_data/redis/redis_data1/data</span><br></pre></td></tr></table></figure>
+<h4 id="docker运行从redis"><a class="markdownIt-Anchor" href="#docker运行从redis"></a> docker运行从redis</h4>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run --name redis-slaveof --net=host -v /home/yanwq/docker_data/redis/redis_data1/data:/data -d redis:5.0.9 redis-server --slaveof 192.168.26.75 16379 --port 6380</span><br></pre></td></tr></table></figure>
+<h4 id="查看集群是否成功"><a class="markdownIt-Anchor" href="#查看集群是否成功"></a> 查看集群是否成功</h4>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">docker exec –it redis-master bash</span><br><span class="line">redis-cli -p 16379</span><br><span class="line">info replication</span><br><span class="line"></span><br><span class="line">//范例结果</span><br><span class="line"># Replication</span><br><span class="line">role:master</span><br><span class="line">connected_slaves:1</span><br><span class="line">slave0:ip=192.168.26.73,port=6380,state=online,offset=43329,lag=1</span><br><span class="line">master_replid:62e00c7324e572561d197106981439b3741ab908</span><br><span class="line">master_replid2:0000000000000000000000000000000000000000</span><br><span class="line">master_repl_offset:43613</span><br><span class="line">second_repl_offset:-1</span><br><span class="line">repl_backlog_active:1</span><br><span class="line">repl_backlog_size:1048576</span><br><span class="line">repl_backlog_first_byte_offset:1</span><br><span class="line">repl_backlog_histlen:43613</span><br></pre></td></tr></table></figure>
+<p><img src="/imgs/image-20241217140514682.png" alt="image-20241217140514682" /></p>
+<h4 id="创建哨兵配置"><a class="markdownIt-Anchor" href="#创建哨兵配置"></a> 创建哨兵配置</h4>
+<h5 id="sentinel-26379"><a class="markdownIt-Anchor" href="#sentinel-26379"></a> sentinel-26379</h5>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">mkdir /home/yanwq/docker_data/redis/sentinel/sentinel1</span><br><span class="line">mkdir sentinel-26379.conf</span><br></pre></td></tr></table></figure>
+<h5 id="cd-sentinel-26379conf-配置内容如下"><a class="markdownIt-Anchor" href="#cd-sentinel-26379conf-配置内容如下"></a> cd sentinel-263.79.conf 配置内容如下：</h5>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">protected-mode no</span><br><span class="line">bind 0.0.0.0</span><br><span class="line">port 26379</span><br><span class="line">daemonize no</span><br><span class="line">sentinel monitor mymaster 192.168.26.75 16379 2</span><br><span class="line">sentinel down-after-milliseconds mymaster 5000</span><br><span class="line">sentinel failover-timeout mymaster 180000</span><br></pre></td></tr></table></figure>
+<p><img src="/imgs/image-20241217140713740.png" alt="image-20241217140713740" /></p>
+<h5 id="sentinel-26380"><a class="markdownIt-Anchor" href="#sentinel-26380"></a> sentinel-26380</h5>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">mkdir /home/yanwq/docker_data/redis/sentinel/sentinel2</span><br><span class="line">mkdir sentinel-26380.conf</span><br></pre></td></tr></table></figure>
+<h5 id="cd-sentinel-26380conf-配置内容如下"><a class="markdownIt-Anchor" href="#cd-sentinel-26380conf-配置内容如下"></a> cd sentinel-263.80.conf 配置内容如下：</h5>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">protected-mode no</span><br><span class="line">bind 0.0.0.0</span><br><span class="line">port 26380</span><br><span class="line">daemonize no</span><br><span class="line">sentinel monitor mymaster 192.168.26.75 16379 2</span><br><span class="line">sentinel down-after-milliseconds mymaster 5000</span><br><span class="line">sentinel failover-timeout mymaster 180000</span><br></pre></td></tr></table></figure>
+<p><img src="/imgs/image-20241217140741040.png" alt="image-20241217140741040" /></p>
+<h5 id="sentinel-26381"><a class="markdownIt-Anchor" href="#sentinel-26381"></a> sentinel-26381</h5>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">mkdir /home/yanwq/docker_data/redis/sentinel/sentinel3</span><br><span class="line">mkdir sentinel-26381.conf</span><br></pre></td></tr></table></figure>
+<h5 id="cd-sentinel-26381conf-配置内容如下"><a class="markdownIt-Anchor" href="#cd-sentinel-26381conf-配置内容如下"></a> cd sentinel-263.81.conf 配置内容如下：</h5>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">protected-mode no</span><br><span class="line">bind 0.0.0.0</span><br><span class="line">port 26379</span><br><span class="line">daemonize no</span><br><span class="line">sentinel monitor mymaster 192.168.26.75 16379 2</span><br><span class="line">sentinel down-after-milliseconds mymaster 5000</span><br><span class="line">sentinel failover-timeout mymaster 180000</span><br></pre></td></tr></table></figure>
+<p><img src="/imgs/image-20241217140801380.png" alt="image-20241217140801380" /></p>
+<h4 id="docker运行哨兵"><a class="markdownIt-Anchor" href="#docker运行哨兵"></a> docker运行哨兵</h4>
+<h5 id="哨兵sentinel-26379"><a class="markdownIt-Anchor" href="#哨兵sentinel-26379"></a> 哨兵sentinel-26379</h5>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run -it --name sentinel-26379 --net=host -v /home/yanwq/docker_data/redis/sentinel/sentinel1/sentinel-26379.conf:/usr/local/etc/redis/sentinel-26379.conf -d redis:5.0.9 redis-sentinel /usr/local/etc/redis/sentinel-26379.conf </span><br></pre></td></tr></table></figure>
+<h5 id="查看日志"><a class="markdownIt-Anchor" href="#查看日志"></a> 查看日志</h5>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker logs -f sentinel-26379</span><br></pre></td></tr></table></figure>
+<h5 id="哨兵sentinel-26380"><a class="markdownIt-Anchor" href="#哨兵sentinel-26380"></a> 哨兵sentinel-26380</h5>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run -it --name sentinel-26380 --net=host -v /home/yanwq/docker_data/redis/sentinel/sentinel2/sentinel-26380.conf:/usr/local/etc/redis/sentinel-26380.conf -d redis:5.0.9 redis-sentinel /usr/local/etc/redis/sentinel-26380.conf </span><br></pre></td></tr></table></figure>
+<h5 id="查看日志-2"><a class="markdownIt-Anchor" href="#查看日志-2"></a> 查看日志</h5>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker logs -f sentinel-26380</span><br></pre></td></tr></table></figure>
+<h5 id="哨兵sentinel-26381"><a class="markdownIt-Anchor" href="#哨兵sentinel-26381"></a> 哨兵sentinel-26381</h5>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run -it --name sentinel-26381 --net=host -v /home/yanwq/docker_data/redis/sentinel/sentinel3/sentinel-26381.conf:/usr/local/etc/redis/sentinel-26381.conf -d redis:5.0.9 redis-sentinel /usr/local/etc/redis/sentinel-26381.conf</span><br></pre></td></tr></table></figure>
+<h5 id="查看日志-3"><a class="markdownIt-Anchor" href="#查看日志-3"></a> 查看日志</h5>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker logs -f sentinel-26381</span><br></pre></td></tr></table></figure>
+<h4 id="查看集群哨兵是否成功"><a class="markdownIt-Anchor" href="#查看集群哨兵是否成功"></a> 查看集群+哨兵是否成功</h4>
+<h5 id="进入主redis中执行"><a class="markdownIt-Anchor" href="#进入主redis中执行"></a> 进入主redis中执行</h5>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">docker exec -it redis-master bash</span><br><span class="line">redis-cli -p 16379</span><br><span class="line">keys *					// (empty list or set)</span><br><span class="line">set user1 user1   		//OK</span><br><span class="line">get user1      			//&quot;usre1&quot;</span><br></pre></td></tr></table></figure>
+<p><img src="/imgs/image-20241217140829467.png" alt="image-20241217140829467" /></p>
+<h5 id="进入从redis中查看"><a class="markdownIt-Anchor" href="#进入从redis中查看"></a> 进入从redis中查看</h5>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">docker exec -it redis-slaveof bash</span><br><span class="line">redis-cli -p 6380</span><br><span class="line">get user1			//&quot;user1&quot;</span><br></pre></td></tr></table></figure>
+<p><img src="/imgs/image-20241217140839081.png" alt="image-20241217140839081" /></p>
+<h5 id="停掉主redis服务打开3个会话查看哨兵日志"><a class="markdownIt-Anchor" href="#停掉主redis服务打开3个会话查看哨兵日志"></a> 停掉主redis服务,打开3个会话查看哨兵日志</h5>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">docker stop redis-master</span><br><span class="line">docker logs -f sentinel-26379</span><br><span class="line">docker logs -f sentinel-26380</span><br><span class="line">docker logs -f sentinel-26381</span><br></pre></td></tr></table></figure>
+<p><img src="/imgs/image-20241217140846971.png" alt="image-20241217140846971" /></p>
+
+      
+    </div>
+    <div class="article-footer">
+      <blockquote class="mt-2x">
+  <ul class="post-copyright list-unstyled">
+    
+    <li class="post-copyright-link hidden-xs">
+      <strong>本文链接：</strong>
+      <a href="https://www.yanwq.com/2024/12/17/kvpl-redis%E4%B8%80%E4%B8%BB%E4%B8%89%E4%BB%8E%E4%B8%89%E5%93%A8%E5%85%B5%E9%83%A8%E7%BD%B2%E6%96%87%E6%A1%A3/" title="redis哨兵部署" target="_blank" rel="external">https://www.yanwq.com/2024/12/17/kvpl-redis一主三从三哨兵部署文档/</a>
+    </li>
+    
+    <li class="post-copyright-license">
+      <strong>版权声明： </strong> 本博客所有文章除特别声明外，均采用 <a href="http://creativecommons.org/licenses/by/4.0/deed.zh" target="_blank" rel="external">CC BY 4.0 CN协议</a> 许可协议。转载请注明出处！
+    </li>
+  </ul>
+</blockquote>
+
+
+<div class="panel panel-default panel-badger">
+  <div class="panel-body">
+    <figure class="media">
+      <div class="media-left">
+        <a href="https://github.com/ywq0811" target="_blank" class="img-burn thumb-sm visible-lg">
+          <img src="/images/avatar.jpg" class="img-rounded w-full" alt="">
+        </a>
+      </div>
+      <div class="media-body">
+        <h3 class="media-heading"><a href="https://github.com/ywq0811" target="_blank"><span class="text-dark">yanwq</span><small class="ml-1x">Go Developer</small></a></h3>
+        <div>个人简介。</div>
+      </div>
+    </figure>
+  </div>
+</div>
+
+
+    </div>
+  </article>
+  
+    
+  <section id="comments">
+  	
+
+    
+  </section>
+
+
+  
+</div>
+
+  <nav class="bar bar-footer clearfix" data-stick-bottom>
+  <div class="bar-inner">
+  
+  <ul class="pager pull-left">
+    
+    
+    <li class="next">
+      <a href="/2024/12/17/%E5%9B%BD%E4%BA%A7%E5%8C%96%E6%9C%8D%E5%8A%A1%E6%94%B9%E9%80%A0%E6%96%87%E6%A1%A3/" title="国产化服务改造文档（arm64）"><span>下一篇&nbsp;&nbsp;</span><i class="icon icon-angle-right" aria-hidden="true"></i></a>
+    </li>
+    
+    
+    <li class="toggle-toc">
+      <a class="toggle-btn " data-toggle="collapse" href="#collapseToc" aria-expanded="false" title="文章目录" role="button">    <span>[&nbsp;</span><span>文章目录</span>
+        <i class="text-collapsed icon icon-anchor"></i>
+        <i class="text-in icon icon-close"></i>
+        <span>]</span>
+      </a>
+    </li>
+    
+  </ul>
+  
+  
+  
+  <div class="bar-right">
+    
+  </div>
+  </div>
+</nav>
+  
+
+
+</main>
+
+  <footer class="footer" itemscope itemtype="http://schema.org/WPFooter">
+	
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/ywq0811" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+    </ul>
+
+    <div class="copyright">
+    	
+        <div class="publishby">
+        	Theme by <a href="https://github.com/cofess" target="_blank"> cofess </a>base on <a href="https://github.com/cofess/hexo-theme-pure" target="_blank">pure</a>.
+        </div>
+    </div>
+</footer>
+  <script src="//cdn.jsdelivr.net/npm/jquery@1.12.4/dist/jquery.min.js"></script>
+<script>
+window.jQuery || document.write('<script src="js/jquery.min.js"><\/script>')
+</script>
+
+<script src="/js/plugin.min.js"></script>
+
+
+<script src="/js/application.js"></script>
+
+
+    <script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(未命名)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+
+<script src="/js/insight.js"></script>
+
+
+
+
+
+
+   
+
+
+
+
+   
+    
+<script src="//cdn.jsdelivr.net/npm/gitment@0.0.3/dist/gitment.browser.min.js"></script>
+<script>
+var gitment = new Gitment({
+  // id默认为当前页面url，如果url后带参数或锚点，gitment要重新初始化
+  // https://github.com/imsun/gitment/issues/55
+  // 解决方案：id:window.location.pathname,或者将id设置为当前页面标题
+  id: 'redis哨兵部署', 
+  owner: '', // 可以是你的GitHub用户名，也可以是github id
+  repo: '',
+  oauth: {
+    client_id: '',
+    client_secret: '',
+  }
+})
+gitment.render('comments')
+</script>
+
+
+
+
+
+
+
+
+
+</body>
+</html>
